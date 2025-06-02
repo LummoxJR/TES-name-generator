@@ -4,6 +4,8 @@ This generator was built to support creative projects for Skyrim modding, but sh
 
 To use the generator, just choose the race from the dropdown, and click a button for the gender. A list of names will appear. Click any name to copy it to your clipboard. I recommend keeping a file of "good idea" names that struck your fancy for later use. In its current iteration this generator will not save names for you.
 
+[Start generating names!](name-generator.html)
+
 ## The Markov chain generator
 
 Most of the genertors use a Markov chain model, using names sourced from the games as input. A Markov chain uses its input to build a probability list. For any given sequence of N characters, it chooses the next letter based on weighted probability. The Markov chain is order 4, meaning it uses 4-character sequences, but for sequences with extremely limited outcomes, it supplements with order-3 chains. The generator is further constrained by trying to reach a predetermined target length (probabilistic, based on source names).
