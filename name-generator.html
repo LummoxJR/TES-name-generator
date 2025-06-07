@@ -13,6 +13,8 @@
 	--button-fg: #fff;
 	--button-bg: #339;
 	--button-bg-hover: #55c;
+	--border-color: color-mix(in oklab, var(--fgcolor), var(--base-bg) 20%););
+	--link-color: #9cf;
 }
 * {box-sizing: border-box;;}
 body {font: 16pt var(--base-font); color: var(--fgcolor); background: var(--base-bg);}
@@ -24,7 +26,7 @@ button, select {
 }
 select {border-style: inset;}
 option:hover {color: inherit; background-color: var(--button-bg-hover);}
-#generator {display: grid; grid-template: auto auto / 100%; border: 2px solid currentColor; width: 60%; margin: 50px 20% 0; border-radius: 10px; overflow: auto; background: var(--results-bg);}
+#generator {display: grid; grid-template: auto auto / 100%; border: 2px solid var(--border-color); width: 60%; margin: 50px 20% 0; border-radius: 10px; overflow: auto; background: var(--results-bg);}
 #header {display:table-cell; text-align: center; padding: 10px; background: var(--header-bg);}
 #results-top {font-weight: bold; text-align: center; padding: 10px;}
 #results {text-align: center; columns: 4; gap: 1em; padding: 10px;}
@@ -76,19 +78,27 @@ option:hover {color: inherit; background-color: var(--button-bg-hover);}
 		height: 1em;
 		border-radius: 0.5em;
 		background: currentColor;
-		&.redguard-prefix-at {background: #990;}
-		&.redguard-prefix-af {background: #6c0;}
-		&.redguard-prefix-al {background: #903;}
-		&.altmer-family {background: currentColor;}
 	}
 }
 .altmer-family {color: color-mix(in oklab, var(--fgcolor), var(--base-bg) 25%);}
 .fail span {color: inherit;}
+#notes {
+	font-size: 0.8em;
+	text-align: justify;
+	padding: 5px 10px;
+	background: var(--results-bg);
+	border: 2px solid var(--border-color);
+	border-radius: 10px;
+	width: 60%;
+	margin: 5px 20%;
+}
 
 #links {
 	text-align: center;
 	margin-top: 2em;
 }
+a {color: var(--link-color);}
+a:visited {color: color-mix(in oklab, var(--link-color), var(--base-bg) 25%);}
 </style>
 <script>
 
@@ -403,8 +413,7 @@ function Compound(data,params) {
 			//console.log("pattern",pt);
 			for(c of pt.split(/([,-\s])/)) {
 				if(c == ',') {capnext=false; continue;}
-				if(c == '-') {capnext=true; out += c; continue;}
-				if(c.match(/\s/)) {capnext=false; out += c; continue;}
+				if(c.match(/[-\s]/)) {capnext=true; out += c; continue;}
 				clist = components[c]||[c];
 				while(clist.length) {
 					let i = pickDynamicWeightIndex(clist);
@@ -425,6 +434,8 @@ function Compound(data,params) {
 
 }
 
+const NullGen = {Generate: ()=>''};
+
 function Generator(list,name) {
 	if(!new.target) return new Generator(list,name);
 
@@ -437,12 +448,10 @@ function Generator(list,name) {
 		w = (typeof list[i+1]=='number') ? list[++i] : 1;	// numeric weight can follow generator
 		if(typeof gen === 'string') {gens.push(new Markov(gen.split(',')), tw+=w); continue;}
 		fn = gen.type || "markov";
-		if(fn == "markov") {
-			gens.push(new Markov(gen.data), tw+=w);
-		}
-		else if(fn == "compound") {
-			gens.push(new Compound(gen.data), tw+=w);
-		}
+		let ng = NullGen;
+		if(fn == "markov") ng = new Markov(gen.data);
+		else if(fn == "compound") ng = new Compound(gen.data);
+		gens.push(ng, tw+=w);
 	}
 
 	this.legends = gens.map((gen) => (gen.legends||[])).flat();
@@ -460,51 +469,62 @@ var names = {
 	"khajiit.female": "Aahin,Aahni,Afeliz,Ahana,Aheh,Ahrazad,Ajjan,Akhtar,Anita,Araya,Ariba,Ashima,Asrin,Atima,Azita,Aziahin,Aziahni,Azifeliz,Azihana,Aziheh,Azihrazad,Azijjan,Azikhtar,Azinita,Aziraya,Aziriba,Azishima,Azisrin,Azitima,Azizita,Elaahin,Elaahni,Elafeliz,Elahana,Elaheh,Elahrazad,Elajjan,Elakhtar,Elanita,Elaraya,Elariba,Elashima,Elasrin,Elatima,Elazita,Faahin,Faahni,Fafeliz,Fahana,Faheh,Fahrazad,Fajjan,Fakhtar,Fanita,Faraya,Fariba,Fashima,Fasrin,Fatima,Fazita,Khaahin,Khaahni,Khafeliz,Khahana,Khaheh,Khahrazad,Khajjan,Khakhtar,Khanita,Kharaya,Khariba,Khashima,Khasrin,Khatima,Khazita,Kiahin,Kiahni,Kifeliz,Kihana,Kiheh,Kihrazad,Kijjan,Kikhtar,Kinita,Kiraya,Kiriba,Kishima,Kisrin,Kitima,Kizita,Moahin,Moahni,Mofeliz,Mohana,Moheh,Mohrazad,Mojjan,Mokhtar,Monita,Moraya,Moriba,Moshima,Mosrin,Motima,Mozita,Naahin,Naahni,Nafeliz,Nahana,Naheh,Nahrazad,Najjan,Nakhtar,Nanita,Naraya,Nariba,Nashima,Nasrin,Natima,Nazita,Raahin,Raahni,Rafeliz,Rahana,Raheh,Rahrazad,Rajjan,Rakhtar,Ranita,Raraya,Rariba,Rashima,Rasrin,Ratima,Razita,Riahin,Riahni,Rifeliz,Rihana,Riheh,Rihrazad,Rijjan,Rikhtar,Rinita,Riraya,Ririba,Rishima,Risrin,Ritima,Rizita,Saahin,Saahni,Safeliz,Sahana,Saheh,Sahrazad,Sajjan,Sakhtar,Sanita,Saraya,Sariba,Sashima,Sasrin,Satima,Sazita,Shaahin,Shaahni,Shafeliz,Shahana,Shaheh,Shahrazad,Shajjan,Shakhtar,Shanita,Sharaya,Shariba,Shashima,Shasrin,Shatima,Shazita,Soahin,Soahni,Sofeliz,Sohana,Soheh,Sohrazad,Sojjan,Sokhtar,Sonita,Soraya,Soriba,Soshima,Sosrin,Sotima,Sozita,Taahin,Taahni,Tafeliz,Tahana,Taheh,Tahrazad,Tajjan,Takhtar,Tanita,Taraya,Tariba,Tashima,Tasrin,Tatima,Tazita,Zaahin,Zaahni,Zafeliz,Zahana,Zaheh,Zahrazad,Zajjan,Zakhtar,Zanita,Zaraya,Zariba,Zashima,Zasrin,Zatima,ZazitaAbanji,Adanja,Addhiranirr,Adharanji,Affri,Ahdahni,Ahdni,Ahdri,Ahjara,Ahnarra,Ahnassi,Ahndahra,Ahnia,Ahnisa,Ahzini,Aina,Ajira,Anjari,Arabhi,Aravi,Ashidasha,Bahdahna,Bahdrashi,Baissa,Bhusari,Chirranirr,Dahleena,Dahnara,Ekapi,Harassa,Habasi,Idhassi,Inerri,Inorra,Kaasha,Khamuzi,Khazura,Khinjarsi,Kiseena,Kishni,Kisimba,Kisisa,Nisaba,Rabinna,Shaba,Shivani,Shotherra,Shunari,Tsabhi,Tsajadhi,Tsalani,Tsani,Tsiya,Tsrazami,Ubaasi,Udarra,Unjara,Vanjirra,Zahraji,Abhuki,Ahdarji,Ahjazda,Ashni,Atahba,Atrabhi,Ayisha,Dro'Nahrahe,Kishashi,Nahsi,S'fara,S'jirra,S'kasha,S'Krivva,S'mirra,S'thasa,Shamada,Shomara,Shuravi,Talasma,Tsalajma,Tsarrina,Tsavi,Tsramla,Tsrava,Vajhira,Yushi,Zabhila,Zahrasha,Ahkari,Ahjisi,Atahbah,Khayla,Ra'zhinda,Shavari,Tsavani,Tsrasuna,Zaynabi,Badali,Burri,Dagla,Kirai-la,Mabeba,Muhada,Shawia,Tarrami,Zansora,Zulana,Aba-daro,Abadai,Abadusa,Abahrimaya,Abandarra-la,Abazbi,Abelaya,Abenil,Abernura,Abernura-dra,Abhadali,Abizah,Abuana,Adabibi,Adajadhi,Adalamusa,Adalema,Adara'hai,Adhabi,Adhahara,Adharama-ri,Adhimba,Adrabassi,Adusa-daro,Aelif,Afehaba,Ahainaz-daro,Ahaktha,Ahirneriba,Ahmuna-la,Aihrima,Airavi,Airdeoza,Aireh,Aisarbana,Aitrabhi,Akethi,Almira,Amarri,Amizha,Amunara,Anahbi,Anala,Anali,Anbi,Andarri,Anisha,Arainaz,Araitha,Arimaia,Arrivaza,Arrunirai,Aruda,Arumarr-dro,Ashalki,Athadda,Atharra,Aza,Azahrr,Azartah,Azbi-ra,Azdazi,Azena,Azeriba,Aznabi,Aznara,Azreshilla,Azshira,Azum,Azuni,Azuruna,Baimarri,Bakkhara,Banji,Banobani,Barnibi,Bataba,Bayya,Bazali,Bazri,Bebbia,Berani,Berriza,Beshari,Bezeni,Bezera,Bihanabi,Bilbiri,Bilunna,Bindabi,Binsora-la,Birai,Bishaba,Bishanti,BishuTaia,Bisussah,Biya-daro,Bizinda,Bressa,Budanja,Buhani,Buhayda,Burana,Butaba,Buzinda,Buzrukana,Cashia,Caska,Chinjarsi,Chirba,Chirrhari,Chirrrai,Chirsusah,Chizbari,Chrimarbina,Daahin,Dabani,Daibayda,Dadazi,Dagila,Dahari,Dahjarsi,Dahzini,Daibiza,Daifa,Daiharri,Daihjara-la,Daini,Dajarri,Dakharri,Dar'ava,Darali,Dazjhera,Dazreso-jo,Dazshi,Debaasi,Dee,Dehdri,Dehnarra,Demusa,Dethadda,Dezirri,Dhanril,Dimarra,Dor'haja,Dorahin,Dordura,Dorharai,Dorkrivva,Dortabi,Dorzara,Dorzarra,Dulaya,Dunurra,Durrali,Duzi,Duzuni,Efoh-dra,Ehtayah,Eilara,Ejukki,Elamusa,Elazura,Elenabi,Elusara-la,Elzak,Enarri,Ensa-ko,Ensi,Erdama,Ernabi,Erranza,Erunirai,Eshaba,Eshah,Eshmini-ma,Evani,Ezabi,Ezipa,Ezreba,Fabasi,Fada,Fada-daro,Fadama,Fahirri,Falana,Farniri,Fayna,Feanirr,Fedura,Fegarra,Fehdni,Feiffi,Felamusa,Felari,Felira,Feluni,Ferhara,Ferna,Feziya-ko,Fezreba,Fihada,Fijirra,Filadi,Finnah,Frestinda,Hahakil,Haheiba,Hahnissi,Haina-daro,Halani,Halitazi-dra,Hamira,Hamirra,Hanali,Hani,Hanubina-ko,Hariba,Harrani,Hashuri-daro,Hasra,Hatiha,Hayya,Hazari,Heathre,Hebasi,Hedani,Hehayda,Heleni,Henadi,Henirai,Hensora,Hezura,Hihainaz,Himalla,Himathaku,Hinsora,Hiyaza,Hizala,Hizjoahna,Hizuni,Huddima,Hulinda-la,Igarri,Ilanadzeh,Ilanjarsi,Ilara,Ilarana,Ildani,Ilekama,Ilemaka,Ilhadrashi,Inama,Iraya,Irkki,Irnadza,Irrki,Irsusah,Iruzda,Irzaba,Ishalga,Izjadi,Izza,J'baashli,J'Reeza,Ja'darri,Jad'zirri,Jainda,Jalamya,Janessa,Javinda,Jerazzi,Jilarga,Jiluza,Jimila,Jiyya,Jo'isi,Juisa,Juluda-daro,Jurairia,Jurana,Juranda-ra,Jurni,Ka'ishka,Kada,Kadalura,Kadhassi,Kahada,Kahiri,Kala,Kalari,Kalarra,Kamunara,Karina,Kasafia,Kashapi,Kauzanabi-jo,Kazargi,Kazarri,Kazdi,Kazirra,Kazra,Kazrala,Khaba,Khaiffi,Khalajo,Khalama,Khali,Khamasha,Khamira,Khana,Khanni,Khara-ko,Khasabi,Khaygi,Khayradani,Khezuli,Khilbirra,Khilena-ka,Khilenaba,Khina,Khishmina,Khizuna,Khuhari,Khurga,Khurra,Khuzi,Kiasha,Kibibi,Kidara,Kideya,Kihrasha,Kiseravi,Kishka,Kiza,Krisiko,Kubiba-ma,Kuhari,Kulira,Kunamu-la,Kunira-daro,Kurdi,Kurshara-daro,Kurzatha,Kurzni,Kuzashi,Kuzda,Kuzrni,Kuzulaza,Lahini,Lalimeh,Lamanu,Lanasi,Laurri,Lazami,Lezu,Lizifha,Lusha,Lyrrsazhi,M'deshargo,Madashara,Maedura,Maedarri,Maerassa,Maezalaya,Maezi,Maffri,Magdi,Mahazi,Mahrima,Maila,Majadhi-ka,Majdi,Malazu,Malbirra,Malira,Mamaea,Manabi,Manarni-la,Mansa,Mara'dahni,Marali,Marami,Mararanza,Marasadra,Marashi,Marazira,Marekki,Marra'var,Masarha,Mashawi,Masura-dra,Matani,Matbia,Mathi,Mazduni-daro,Mazu,Mazza-Mirri,Medarzia,Melae,Merani,Merani-dra,Mherisha,Mideyah,Migarra,Mighila,Miglah,Milaya,Milira,Mimi-dra,Mina-diir,Miniza,Minrizi,Minurrun,Minurta,Mirani,Miranibi,Mirari,Mirudda,Misaba,Mizahabi,Mizbina,Mizrali,Mobiba,Mubayda,Mulama,Munaea,Munili,Mura,Muzuli,Naballi,Nabdi,Nabiha,Nabina-ko,Nabira,Nadahi,Nadama,Nadara,Nadari-dra,Nagarra,Nahdahni,Nahrevii,Naiba,Naihana,Najirra,Nakala,Nala-do,Nalimeh,Naluza,Namu,Naradai,Naradani,Naragara,Narahni,Narama-ko,Narazbiri,Narazda,Narazreshi,Narguli,Narrama,Naruza,Narzura,Natrada,Nayya,Nazala,Nezbi,Nirahni,Nirai,Nirshala,Nirshanti,Nisaazda,Nisuzi,Nubani,Nudabibi,Nuhunza,Nuifa,Nulaga,Nuledhi,Nulla,Numaia,Numara,Nurisipa,Nurra,Nusana,Nuthanda,Nuzalu,Odaini,Ohama,Onsari,Oonama,Paadeza,Paaniir,Paathi,Paawelaya,Pabazi,Pafirra,Pahba-dra,Pahleena,Pajmina,Pakethi,Palami,Pamaea,Pamunara,Panisa,Pathi,Payisha,Pazipa,Pibiha,Pilbira,Pinirai,Pirharri,Pirjmina,Pirlasa,Puhnara,Pulaya,Pulemu,Pulu,Punabi,Punala,Punamu,Punirai,Punzala,Purah,Purani,Purari,Qa'jhirr,Ra'back,Rabbah,Rabeba,Rabiza,Raedazi,Raehsi,Raeififeh,Raenobi,Raerabhi,Raezargi,Rahiba,Raiffi,Rakalu-daro,Rakkhiza,Ranabi,Ranabia,Ranja,Ras'jaba,Rashiha,Rayfa,Razashi,Ra'zaym,Razila,Rejmina,Rezzai,Rhani,Riba,Ribhuki,Rideza,Ridkhassi,Riharai,Rihiri,Rihnissi,Rilasu,Rilbirri,Ririna,Roznali,Sabani,Sabarapa,Sabibi,Sadaifa,Sadara-do,Sagara,Sahada,Sahira-daro,Saifa,Saizeh,Salezu,Salita-ko,Samaea-do,Samati,Samati-ko,Samsu,Sanabi,Sanobani,Sanua-la,Sapila,Sarirna,Sarnibi,Sashawi,Sattaiq,Satarri,Sayya,Saziza,Sebazi,Sedarra,Sedeza,Sehana,Sena-daro,Senamu-daro,Sepaea,Serabhi,Sereyne,Serunira,Seurri,Sezali,Sezdi-dra,Sezera,Sha'ad,Shabani,Shadazi,Shadeya,Shadura,Shadya,Shalani,Shalar,Shamaea,Shamara-ma,Shamiri,Shandi,Shara,Sharrasti,Shashara,Shasirba,Shasuna-ja,Shausa,Shazah,Shazari,Shazbael,Shazra,Shiba-dra,Shideya,Shilaya,Shilli,Shimsamu,Shirai-ma,Shirran,Shisuri,Shodara,Shoddhiran,Shodura,Shohazi,Shomuzi,Shonsora,Shoshmina,Shozami,Shuanirr,Shugarra,Shulbaza,Shumiri,Shuni-daro,Shurami-dra,Shuva,Shuzarta,Shuzera,Shuzirri,Shuzura,Sibati-dara,Sidura,Sihada,Sihara,Sihrimaya,Silezu,Silurra,Siluza,Sindabi,Sithasa,Sizbael,Sizenza,Sobabe,Sobani,Sudashara,Suhdahni,Sulema,Sumaea,Suni,Suranu,Surasha,Surdu,Suzabi,Suzali,Tadali,Tadari,Taffisi,Tahadi,Tahaibba,Tahara,Tahari,Tahayda,Tajirri,Takhiri,Tamaya,Tamu,Taranbari-daro,Taranza,Taseena,Tashishi,Tasisa,Tasnasi,Tazadra,Tazia,Tebeba,Tebeza-ko,Tebhuki,Teifi,Tenobi,Terala,Teruzda,Tesusah,Thabazi,Thadanja,Thadarra,Thadharanji,Thaeduna,Thaegara,Thaezara,Thahala,Thahiri,Thajukki,Thalara,Thalbaza,Thalinfar,Thamaia,Thamisashi,Thanala,Thathali,Thazahrr,Tinti,Tirusa,Tiseini-ka,Tohiba,Trezzi,Tsaba,Tsamabi,Tsamara,Tsanji,Tsaraba,Tsarali,Tsarii,Tsazii,Tsazrebi,Tsazura,Tsigara,Tsigila,Tsirami,Tsirina,Tsradarri,Tsrarranza,Tu'heiba,Tubabi,Tufeh,Tuhada,Tuharrii,Tuiza,Tukhari,Tulira,Tumira,Tunasi,Tunsanti,Turami,Turap'su,Udamaji,Udanta,Uhiratu,Umisashi,Unishi,Unjasi,Urbani,Urbinna,Urdaam,Urifa,Urilumezi,Urizali,Urjukka,Urjurra,Urzashi,Uzipa,Vabashi,Vahara,Vahazi,Vaifa,Valashi,Vanima,Vanraja,Varisipa,Vasanha,Vath'ira,Vayzah,Vazbi,Vinbaza,Vivi,Vykosa,Watzhi,Yabizah,Yaduna,Yahba,Yahirai,Yahiri,Yamaea,Yamanu-ko,Yana,Yanadzi-jo,Yanata,Yaniburr,Yansora,Yansun,Yanu-ma,Yasana,Yazita,Yenabi,Yubika,Yudashara,Yuhleena,Yunala,Yuramla,Yushiha,Yutahbah,Zabani,Zabdi,Zabhi,Zadai,Zadala,Zadaza,Zadazi,Zadeva,Zaeri,Zahanabi,Zaharai,Zahari,Zahba,Zaheida,Zahra,Zaiba,Zaimira,Zaina,Zainabaza,Zainan,Zainjhad,Zairan,Zairana,Zairuni,Zaisashi,Zaizami,Zajinni,Zalapu,Zalar-do,Zalasu,Zalayza,Zalema,Zalezu,Zalinra,Zalirra,Zalmimi,Zalsheem,Zalurrah,Zara,Zarri,Zashanti,Zashawi,Zav'i,Zayansora,Zayaza,Zaydi,Zayheida,Zayrah,Zayreba,Zayri,Zayshara,Zazaahni,Zazabernura,Zazabhuki,Zazalah,Zazanisa,Zazarghi,Zazarni,Zebabi,Zebatba-ko,Zebba,Zemmarga,Zenira,Zeria,Zeriba,Zessura,Zetisha,Zhininda,Zibakka,Zirani,Zithana,Zithiri,Zukhara-daro,Zunala,Zurana,Zurka,Saashi,Svana,Tasha,Abeysa,Ahji,Ahna,Alasha,Alassi,Ashiri,Ashri,Awassi,Bashi,Bashira,Dahlima,Dakhari,Hadaki,Hilani,Isari,Kirava,Kishra,Nisha,Sudasa,Ushri,Vanji,Vatassa,Ahn-eks'kha,Ahnissi,Aishah,Anequina,Anurassa,Bezumi,Bhisha,Eshita,Hasaama,Jazadi,Kish'na,Mizaba-ko,Mizzi,M'Sharra,Munilli,Naamah,Rathuni-la,Shizahi-jo,Sirahai-daro,Tazzie,Thazahrr-ra,Vazshara,Yenamu,Zabia-ko",
 	"nord.male": "Alald,Alan,Alar,Alarik,Alarke,Alarne,Aleld,Alen,Alens,Aler,Alik,Alis,Alorn,Asgald,Asgan,Asgar,Asgarik,Asgarke,Asgarne,Asgeld,Asgen,Asgens,Asger,Asgik,Asgis,Asgorn,Bjald,Bjan,Bjar,Bjarik,Bjarke,Bjarne,Bjeld,Bjen,Bjens,Bjer,Bjik,Bjis,Bjorn,Erald,Eran,Erar,Erarik,Erarke,Erarne,Ereld,Eren,Erens,Erer,Erik,Eris,Erorn,Fenrald,Fenran,Fenrar,Fenrarik,Fenrarke,Fenrarne,Fenreld,Fenren,Fenrens,Fenrer,Fenrik,Fenris,Fenrorn,Harald,Haran,Harar,Hararik,Hararke,Hararne,Hareld,Haren,Harens,Harer,Harik,Haris,Harorn,Ingmald,Ingman,Ingmar,Ingmarik,Ingmarke,Ingmarne,Ingmeld,Ingmen,Ingmens,Ingmer,Ingmik,Ingmis,Ingmorn,Jurgald,Jurgan,Jurgar,Jurgarik,Jurgarke,Jurgarne,Jurgeld,Jurgen,Jurgens,Jurger,Jurgik,Jurgis,Jurgorn,Kjald,Kjan,Kjar,Kjarik,Kjarke,Kjarne,Kjeld,Kjen,Kjens,Kjer,Kjik,Kjis,Kjorn,Mojald,Mojan,Mojar,Mojarik,Mojarke,Mojarne,Mojeld,Mojen,Mojens,Mojer,Mojik,Mojis,Mojorn,Sorald,Soran,Sorar,Sorarik,Sorarke,Sorarne,Soreld,Soren,Sorens,Sorer,Sorik,Soris,Sororn,Torbald,Torban,Torbar,Torbarik,Torbarke,Torbarne,Torbeld,Torben,Torbens,Torber,Torbik,Torbis,Torborn,Ulrald,Ulran,Ulrar,Ulrarik,Ulrarke,Ulrarne,Ulreld,Ulren,Ulrens,Ulrer,Ulrik,Ulris,Ulrorn,Tobias,Urik,Haki,Abbard,Adding,Aenar,Agning,Alfbrand,Alfhedil,Allding,Alof,Areas,Arkming,Arnskar,Audmund,Balfring,Barirrid,Baslod,Bato,Batou,Bedraflod,Bedrir,Bjadmund,Bormir,Botrir,Brandr,Briring,Brurid,Bryngrim,Cristus,Daglin,Dathman,Dryngheid,Eifid,Ennbjof,Ergnir,Fanar,Fjol,Fjorgeir,Fjori,Fjorrod,Fjrokvar,Forstaag,Fraki,Frald,Frik,Garding,Geilir,Godrod,Gogrek,Graring,Gudling,Haakon,Haening,Haesmar,Hakar,Hallvaror,Halof,Hamlof,Hamvir,Hefadmir,Heidmir,Heifnir,Herd,Higil,Hirnir,Hisin,Hjoldir,Hjrondir,Hlar,Hloggar,Hlora,Hlormar,Hodlismod,Hoki,Holmar,Honthjolf,Horstar,Hrargal,Hrisskar,Hroldar,Hrondar,Hrundi,Hulgarth,Hurg,Hurnfing,Hurolf,Hylf,Idlami,Itar,Jolgeir,Knurguri,Kunthar,Lorod,Maering,Mendel,Norring,Odmi,Onmi,Ormvard,Pelf,Radd,Raflod,Rakoslod,Ranmir,Reinhardt,Roggvar,Saetring,Sarnir,Savard,Sifknir,Sigvatr,Sittar,Sjarnfid,Sjoring,Sjorvar,Snadir,Snorri,Sold,Sor,Sorkvild,Star,Svog,Thongar,Thorek,Thormoor,Throknolf,Thrud,Thurek,Toralf,Ulfgar,Urfing,Valgeir,Valund,Velfred,Vigunn,Virgerd,Vongvild,Yngling,Branson,Duvais,Egrien,Gravel,Scythe,Wulfbris,Agarmir,Agnar,Algot,Arctus,Beirir,Bittneld,Bjalfi,Bor,Burd,Carsten,Eitar,Erich,Esbern,Fafnir,Fjotreid,Geimund,Gromm,Gukimir,Gunder,Gundlar,Hafid,Hans,Havilstein,Heinrich,Henrik,Hil,Hjar,Hlofgar,Holger,Honmund,Horkvir,Hridi,Hrol,Irroke,Iver,Jayred,Jesper,Jofnhild,Jollring,Jorck,Jorundr,Kalthar,Keld,Larthjar,Logvaar,Lorenz,Lorkmir,Lynch,Manheim,Mogens,Msirae,Nels,Newheim,Niels,Olav,Olfand,Ongar,Orgnolf,Ortis,Regner,Reistr,Rolgarel,Roliand,Snar,Sten,Storn,Styrbjorn,Tolgan,Torbal,Torolf,Tove,Valdemar,Vidkun,Vigge,Wilhelm,Wrath,Yngvar,Barknar,Engar,Fultheim,Gunjar,Sond,Torkild,Adalvald,Addvar,Addvild,Agmaer,Akar,Alding,Aldis,Alfarinn,Alvor,Andurs,Angrenor,Angvid,Argis,Arnbjorn,Arngeir,Arrald,Asbjorn,Asgeir,Aslfur,Assur,Atar,Aventus,Avulstein,Badnir,Balbus,Balgruuf,Balimund,Beirand,Belrand,Benkum,Benor,Bersi,Bjorlam,Bjormund,Bjornolfr,Bolgeir,Bolli,Bolund,Borgny,Borri,Borvir,Bottar,Briehl,Brill,Brunwulf,Brynjolf,Bulfrek,Calder,Christer,Dagur,Dengeir,Drahff,Drennen,Eigorn,Eimar,Einarth,Elgrim,Embry,Eorlund,Erikur,Erlendr,Faldrin,Falk,Farengar,Farkas,Felldir,Fenrig,Filnjar,Frodnar,Frofnir,Froki,Frorkmar,Frothar,Galmar,Garthar,Garuk,Geirlund,Gestur,Gissur,Gjak,Gjalund,Gjuk,Gloth,Golldir,Gonnar,Gorm,Gort,Gralnach,Gregor,Grenwulf,Grimvar,Grisvar,Gunding,Gunmar,Gunnar,Gunther,Guthrum,Hadring,Hadvar,Hafnar,Hajvarr,Haknir,Hakon,Halvar,Haming,Hargar,Harkon,Harlaug,Harrald,Heddic,Heimskr,Heimvar,Helvard,Hemming,Heratar,Hern,Hewnon,Hjalfar,Hjornskar,Hjorunn,Hod,Hofgrir,Hogni,Holgeir,Holrik,Horgeir,Horik,Horm,Hreinn,Hroar,Hrodulf,Hroggar,Hrollod,Hrongar,Hugin,Hunroor,Idolaf,Igmund,Irlof,Irnskar,Istar,Jenssen,Jervar,Jod,Jofthor,Jolf,Jon,Jorgen,Joric,Jorid,Jorleif,Jorn,Kai,Karl,Kibell,Kleppr,Klimmek,Knjakr,Knud,Kodlak,Kodrir,Korir,Kottir,Kraldar,Kust,Kvenel,Kyr,Lars,Leifnarr,Leifur,Leigelf,Lemkil,Llewellyn,Lod,Lodi,Lodvar,Logrolf,Lokil,Lokir,Lond,Lortheim,Lund,Lygrleid,Lynoit,Majni,Markus,Mathies,Maul,Mikael,Miraak,Molgrom,Mralki,Narfi,Nelkir,Nikulas,Nils,Odar,Odfel,Oengul,Ogmund,Olaf,Olfrid,Ollrod,Onmund,Oren,Orgnar,Orthjolf,Pactur,Pjofr,Raerek,Ragnar,Ralof,Rargal,Rhorlak,Rin,Rissing,Roggi,Roggvir,Rolff,Rorik,Rorlund,Rulnik,Rundi,Rustleif,Sabjorn,Saerlund,Sibbi,Siddgeir,Sifnar,Sigaar,Sigar,Sigurd,Sild,Sinding,Sinmir,Sirgar,Sirkjorg,Skaggi,Skald,Skeggr,Skjol,Skjor,Skorvild,Skuli,Skulnar,Skulvar,Smaref,Snilf,Snilling,Snorreid,Sogrlaf,Solaf,Stalf,Stalleo,Stenvar,Stig,Styrr,Sune,Svaknir,Svarig,Sven,Talsgar,Thadgeir,Thaer,Thalin,Thonar,Thongvor,Thonjolf,Thonnir,Thorald,Thorgar,Thoring,Thorygg,Thrynn,Tolan,Tolfdir,Torbjorn,Torsten,Torvar,Torygg,Tsun,Tulvur,Ulfberth,Ulfr,Ulfric,Unmid,Urval,Vald,Valdar,Valdimar,Valdr,Vanik,Vekel,Verner,Vidgrod,Viding,Vidrald,Vignar,Vilkas,Vilod,Vipir,Virkmund,Volk,Vorstag,Vulwulf,Wilmuth,Wulfgar,Wuunferth,Yrsarald,Ade,Barid,Bronvid,Connor,Ergrod,Fjar,Gjudir,Hald,Harnskar,Hrantin,Hreilund,Jakalor,Jorygg,Klaandor,Littrel,Lodiss,Logangar,Mathon,Odunn,Rogar,Ulfslod,Adalmor,Addald,Addold,Addrald,Adelsar,Adjold,Admaer,Adord,Adpring,Adsilding,Advir,Aelf,Aelfhidil,Aelvyd,Aerolf,Aevar,Afneer,Ageran,Agvar,Akarn,Aklief,Akovor,Akvid,Aldaug,Aldferth,Aldrig,Alfarmuth,Alfgar,Alforunn,Alfund,Algar,Alldin,Allring,Alofheim,Alskar,Alofnorr,Andrei,Andrin,Andryk,Andwulf,Angbjar,Angmund,Angrar,Angrestag,Anjuld,Ansdurran,Arek,Arkas,Arkasis,Arlof,Arnskir,Aron,Arvild,Arvnir,Ashvorn,Askeladd,Asord,Asvorn,Atald,Aud,Audrelheim,Avulrund,Axdin,Axdred,Axrek,Baissar,Bandor,Banthor,Baradin,Barfel,Baric,Baring,Barj,Baro,Barro,Baxard,Baxlof,Baxold,Baxrold,Bel,Belgrod,Belknar,Bellin,Belrengar,Belrud,Benjor,Berfar,Berj,Bermund,Bernt,Berrek,Bervard,Bervid,Birstagg,Bittrid,Bjaron,Bjorick,Bjornen,Bjorskir,Bjoruld,Bjorynolf,Bofesar,Bolfalgar,Bolgen,Bolrir,Borald,Boren,Borfree,Borjs,Borodin,Boski,Bottdold,Bottild,Boward,Bragur,Branalf,Brandling,Brauti,Braxek,Braxhard,Bredin,Bredrek,Bren,Brend,Brendar,Brendngul,Brendravald,Brigvar,Broki,Bron,Brondold,Broning,Bronorr,Bronthmir,Bruik,Brun,Brunelf,Brunog,Brus,Brynsten,Budolen,Buram,Burdlam,Burdog,Burj,Burl,Buron,Carth,Cord,Dagard,Dagimar,Dagnir,Dagrund,Dagusil,Dahfnar,Dalen,Dar,Daric,Darfal,Darj,Darynn,Dedalor,Denskar,Devbarth,Didywyr,Dogun,Dorbin,Dralof,Drathak,Drathod,Dratholar,Drendor,Droi,Drokagir,Drorunn,Eboric,Edjar,Efnort,Eifbrir,Eiman,Eimander,Eislef,Eistaag,Eldfyr,Elsar,Emstagg,Eolaf,Erikar,Erlgald,Erlnorr,Erlrek,Erning,Esling,Euthar,Faer,Faflund,Fafmeskr,Fafnyr,Faled,Falfinar,Falkfyr,Falsorr,Fargord,Fargurd,Farisel,Farro,Farstyg,Feluf,Fenjor,Fenorfar,Fenrir,Fens,Filand,Fildgor,Fingrit,Fjagus,Fjaldar,Fjorstigg,Forbrand,Frahjan,Fralbrand,Frod,Frongeir,Frongrif,Frongrir,Fronjolf,Frorkand,Fuldir,Fulgof,Fultknir,Fultring,Gaddan,Gadodar,Gadof,Gadrenor,Gakar,Gakurek,Galmal,Galuf,Gamirth,Gamwyn,Ganariss,Gandis,Ganeryk,Ganord,Gar,Gardalgar,Garmal,Garm,Garmar,Garneld,Gathelm,Gathotar,Geford,Gefur,Geilund,Gekurek,Gell,Ger,Gerring,Gerrunn,Gerval,Gesfur,Gesrel,Ghain,Girunn,Gjakerth,Gjakil,Gjalder,Gjalrunn,Gjogni,Gjorring,Gjoson,Gjudusil,Glothnar,Gogondar,Gogrolf,Gogvir,Goharth,Gollgarth,Gomriss,Gomund,Goren,Gorisin,Gortgryf,Gorvald,Grimder,Grimissar,Griskild,Groken,Gromjolf,Grorstag,Grundaug,Grundskar,Grundwulf,Gud,Gudaric,Gudgar,Gudomar,Gugnar,Gugnir,Gunar,Gundarsting,Gungrim,Gunskjar,Gunthing,Guraf,Guram,Gurund,Hadamid,Hadkyr,Hadlin,Hadmal,Hadmar,Hadriss,Hafkyr,Hafric,Hafskjar,Hagridden,Hak,Hakgrym,Hakr,Hakstar,Haldric,Halgrel,Halskar,Halyen,Hamar,Hanor,Haraldar,Harkskar,Harmild,Harn,Harnald,Harnwulf,Harvald,Harvni,Hasadif,Hasgenr,Hatunn,Hauting,Hautring,Hautt,Havil,Hectur,Hedstagg,Hegris,Heinfar,Heknorr,Helfana,Helthar,Hemgar,Hemgruuf,Hemjak,Henrigg,Hermrek,Hernik,Hervod,Hialmor,Hilglund,Hilgrim,Hirmond,Hjalling,Hjarkulf,Hjarl,Hjarnam,Hjoag,Hjognar,Hjolard,Hjolfrod,Hjolm,Hjolt,Hjord,Hjorik,Hjorvil,Hjurring,Hjurrun,Hlogling,Hoagding,Hodmar,Hofgrad,Hogfinn,Hoggvir,Hogondar,Hojard,Hokfyr,Hokmal,Hoknir,Hokurek,Hokusil,Holgrim,Holgunn,Holguss,Hollow-Leg,Holsgar,Holsorr,Holstagg,Holvur,Hondbrulk,Hondulf,Honrid,Honththyr,Hordrek,Horgrif,Horming,Horst,Hraelgar,Hraldi,Hramdin,Hrofgen,Hrogar,Hroggi,Hrolfgald,Hrolt,Hrolvar,Hrolvir,Hronolf,Hrordulf,Hrunvatr,Hulfid,Hunald,Hunrand,Hyg,Hylfrald,Idaug,Idofrid,Idrisin,Idryk,Iflin,Ifmor,Ifuss,Igeford,Iglund,Ingfred,Ingolf,Ingurt,Innarrek,Inngyrr,Innraek,Innryk,Irbjar,Irg,Irgnar,Irth,Irthak,Irthor,Irthrig,Isdrid,Isonir,Israk,Isrig,Istler,Itman,Ivandi,Jagyr,Jakaral,Jaknir,Jaluud,Jarning,Jegg,Jeggi,Jeggming,Jeggord,Jeggrich,Jegnorr,Jemaar,Jemalsorr,Jending,Jofarr,Jofnir,Jofstrom,Jofvarr,Jofvid,Jokorn,Jolfr,Jomarr,Jomathak,Jomund,Joneif,Jonndir,Jorald,Jorckleif,Jorckyld,Jordunn,Joreld,Jorunn,Jothorygg,Jur,Jurt,Kadord,Kadstig,Kaild,Kailstig,Kaleb,Kalogar,Kardelf,Kelbarn,Keldnyr,Keldryk,Kemirik,Kerthor,Kezo,Khorb,Khord,Kjaggus,Kjakur,Kjal,Kjalnar,Kjaluld,Kharc,Kjeldrel,Kjollynd,Klaandi,Klause,Knarstygg,Knudikur,Kolgruf,Kor,Korsen,Korstbjorn,Kothheid,Kotholl,Kothon,Kott,Kragar,Kragfarr,Kraglen,Kralald,Krath,Krathon,Kraval,Kyrdegrel,Lanobert,Larthulf,Larsstar,Lathdar,Leiborn,Leifskjyr,Lemdrald,Lenkar,Lennald,Lennar,Lennarth,Lenning,Littald,Littid,Littorn,Littrek,Littvolk,Loddvaar,Lodorr,Lodunn,Logod,Logof,Logorunn,Logorvild,Lokka,Longald,Longstig,Loth,Lothakar,Lothgar,Lothnarth,Lothson,Lughnahf,Lungird,Lunk,Luthin,Lyfskar,Maelmoth,Maevolk,Maginar,Majoll,Majolrun,Majorn,Makoll,Malath,Malofar,Malsold,Malsorr,Maraamun,Maraamur,Marald,Maralfar,Maralthon,Masord,Mathmyar,Mathondar,Mathor,Maulkyr,Melril,Meronil,Mickal,Mikfar,Mjorn,Mjornys,Mordrold,Murthin,Narfar,Narfild,Narir,Narirold,Narrald,Narrek,Nathon,Nedasilf,Nedrek,Nedrold,Nelgyrr,Nhorhim,Nielik,Nielsar,Nielsold,Nielstig,Nikulund,Nilfred,Nilsdimar,Nilsmon,Njial,Njordemar,Njordunn,Njorfar,Njorlund,Nordahl,Norgred,Nybder,Oduvid,Ogmann,Ogmir,Ogondar,Ograh,Ogvar,Okulald,Okurek,Olffik,Olgus,Oljorn,Ollfar,Ollgord,Ollslid,Olmarinn,Olred,Olsi,Ormheid,Orryn,Orstag,Ort,Ortvar,Osming,Otal,Otalich,Otalvor,Othdimar,Otroggar,Otrovor,Ottglund,Ottolf,Pactuld,Podalgar,Podunn,Pogmaan,Poguf,Povaren,Radwald,Raedir,Ragguss,Ragjar,Rakrek,Rald,Ralduf,Ralgar,Ramondir,Rarlmir,Rasir,Reddharn,Reggr,Regold,Reinud,Rhorglund,Rigurt,Rigvar,Rikke,Risfid,Risred,Riurik,Rizareen,Rofli,Rogas,Rogding,Rogef,Rogg,Roggdvar,Rogjar,Rogjoll,Roligmolf,Roloda,Rolstag,Romord,Rorfid,Rorngrek,Rorred,Rorthor,Roruld,Rorygg,Runthor,Sabjur,Sabonn,Saborm,Saehon,Saerdor,Saergar,Saerhild,Saervild,Safrid,Sahun,Sarjoll,Selgaard,Serrin,Shalidor,Sifmir,Sifrelheim,Sifvid,Sig,Signgul,Sigunn,Sigyrr,Sinos,Sirk,Sirkralf,Skadmek,Skaghidil,Skagsten,Skalar,Skaldir,Skalf,Skalferth,Skallin,Skavwulf,Skeg,Skjorlak,Skoref,Skorjan,Skormgondar,Skormknir,Skulreid,Skurnd,Slodrig,Slonn,Snarjolf,Snorfin,Snorrvild,Sober,Sobgruff,Soin,Sojak,Sombren,Sondgruul,Songamdir,Sorben,Sormund,Sormuth,Sorr,Stalfgrif,Stalkun,Stedvar,Steidor,Steir,Steirvald,Stenvadr,Stighelm,Stigthar,Storm,Stromgruf,Sulrengar,Svakdrid,Svalkmar,Svargrim,Svarkjar,Svart,Svein,Svenjar,Svenk,Svenlund,Svenvar,Svergor,Svyne,Talfyg,Talsgryr,Talsold,Talsrel,Talsvar,Talthor,Thadgen,Thadrig,Thal,Thaljorn,Thalm,Thalrig,Thanethen,Tharsh,Thelm,Thelman,Thevin,Thinfrid,Thjol,Thjordic,Thjorlak,Thod,Thonarcal,Thonengar,Thoran,Thorfalgar,Thorgrit,Thorjolf,Thorkell,Thorolf,Thorvar,Thorulf,Thragnar,Thragof,Thralof,Threfr,Thrihild,Thromkjar,Thulvald,Thunsel,Thurin,Tobjarn,Tof,Tolfwulf,Tolvor,Torarald,Tordrir,Torik,Tork,Torkalgar,Torkming,Torrold,Tovjor,Trenlor,Treva,Tulgruff,Tun,Tysvald,Uggald,Uggissar,Uggonn,Uggurek,Ulfnor,Ulligor,Ulov,Uls,Undbjolf,Unmidunn,Unmidvild,Unnvald,Urf,Urgjal,Urlvar,Urnar,Uthlet,Vagakar,Vagar,Vaglof,Vagloson,Valbern,Valbet,Valding,Valdur,Valeric,Vallkir,Vallric,Vanskyr,Vanthongar,Vastaag,Venki,Vestalsgar,Vestord,Vestrek,Viddek,Viddgjaldir,Vidstig,Vidtring,Vidusil,Vigard,Viggol,Vigrod,Vigstrom,Vikgrek,Vikord,Vilbjorn,Vilgis,Vir,Virk,Virkvild,Vithongar,Vkor,Vladolfr,Vofalgar,Vofing,Vofknir,Vogerd,Vol,Volharth,Volkbjolf,Volkbrir,Volmann,Volknar,Von,Vonlef,Vorenor,Vorm,Vormeskr,Votar,Vuldurs,Vund,Vundling,Vurlop,Waren,Wickam,Widulf,Wilbern,Wilhem,Wiljar,Wilminn,Wilrek,Wilvor,Wisten,Woan,Woster,Wulfdis,Yavni,Yjarnn,Ygbal,Ylgar,Yll,Yllondar,Yllstaag,Yngol,Yngold,Yngrel,Yngvid,Yolstagg,Yraldar,Yringor,Ysavild,Ysgramor,Ysgravald,Ysmal,Tyr,Asuf,Brold,Jan,Jonathan,Rodulf,Sirfing,Thondar,Thorbjold,Vilfred,Advard,Afning,Agni,Alafur,Andrid,Angar,Angi,Anker,Armann,Arn,Berit,Bild,Borfinn,Burrek,Dakri,Drodnar,Eggvard,Einar,Erling,Firir,Fridar,Galdir,Gamli,Girgunn,Gridbrod,Grok,Grukar,Gudstar,Gurid,Guring,Gurknar,Guslund,Haenar,Haereid,Hallbjorn,Halmir,Halnir,Halund,Hanning,Haring,Harning,Heidmund,Heignar,Heki,Henning,Herluf,Hinrik,Hodir,Hogge,Hogunn,Horolf,Hundar,Ildir,Isleif,Ivar,Jens,Jodrir,Jokum,Klement,Koli,Leifr,Mikkel,Okul,Olgar,Olling,Ottar,Refnir,Rolund,Saering,Sinmund,Skonn,Skorm,Snarg,Snorgar,Steif,Sviring,Tirning,Tobbe,Ulf,Valter,Vikar,Adrimk,Anders,Asurn,Balmir,Bathorgh,Birkir,Bjord,Borgas,Breff,Brunl,Deroct,Derek,Drengr,Eldrid,Elgryr,Eslaf,Galthor,Gauldur,Geirmund,Gellir,Girgun,Griss,Grjotgaror,Guri,Hadrik,Hagrof,Hanse,Heimdall,Heinlen,Hermeskr,Hildir,Hjalmer,Hjalti,Hjarkborn,Hjarknir,Hoag,Hosgunn,Hroding,Hrodmir,Hroi,Hrolfdir,Hrorgar,Hrormir,Ingjaldr,Istlod,Jakothon,Jalmar,Jeek,Jonder,Jorg,Jyrik,Karsten,Kjoric,Korm,Kluwe,Laernu,Lenne,Loate,Lokheim,Malte,Mantiarco,Manwe,Meksim,Menro,Merkyllian,Mikrul,Mryfwiil,Neddrir,Nodur,Nystrom,Olmgerd,Ragnor,Ramth,Roeth,Rolf,Sigdis,Skardan,Slafknir,Sorri,Strom,Suoibud,Svartr,Swyk,Taleon,Terr,Terrfyg,Thian,Thjold,Thorallod,Thorbald,Thralorr,Thredor,Thromgar,Timmy,Tulvar,Tysnal,Uche,Ulfarr,Ulgar,Ulfgi,Ulfnir,Undveld,Urlach,Valbjorn,Vrage,Vundheim,Wulfharth,Wulfmare,Ylekilnu,Yllothon,Yngnavar,Ynohp,Yoregg,Ysmir,Ytluaf,Yust",
 	"nord.female": "Ana,Ane,Anen,Ania,Anina,Anne,Ante,Beta,Bete,Beten,Betia,Betina,Betne,Bette,Dora,Dore,Doren,Doria,Dorina,Dorne,Dorte,Ella,Elle,Ellen,Ellia,Ellina,Ellne,Ellte,Hana,Hane,Hanen,Hania,Hanina,Hanne,Hante,Hella,Helle,Hellen,Hellia,Hellina,Hellne,Hellte,Inga,Inge,Ingen,Ingia,Ingina,Ingne,Ingte,Jyta,Jyte,Jyten,Jytia,Jytina,Jytne,Jytte,Kirsta,Kirste,Kirsten,Kirstia,Kirstina,Kirstne,Kirstte,Meta,Mete,Meten,Metia,Metina,Metne,Mette,Morga,Morge,Morgen,Morgia,Morgina,Morgne,Morgte,Silla,Sille,Sillen,Sillia,Sillina,Sillne,Sillte,Ulla,Ulle,Ullen,Ullia,Ullina,Ullne,Ullte,Aeta,Aldi,Anja,Aumsi,Barri,Brasteir,Eigma,Eiruki,Ekkhi,Eydis,Fryfnhild,Fryssa,Greidil,Haema,Heddvild,Helga,Hidar,Hjotra,Holmgeira,Hreirek,Hroa,Hrordis,Hyring,Igna,Ilfhild,Imsin,Ingokning,Jolding,Kar,Kili,Kjolver,Kolfinna,Lisaa,Merta,Ondi,Rangela,Ringvild,Rostlogi,Runa,Siri,Sottilde,Thalestris,Thunmund,Ursine,Val,Vori,Ygfa,Birgitta,Teresa,Agata,Agnete,Alga,Edla,Else,Emfrid,Eyja,Hjolfrodi,Jensine,Maeva,Malene,Maren,Margarte,Merete,Nille,Olava,Olga,Petrine,Rigmor,Rona,Signy,Sigrid,Skjorta,Sonje,Ulrika,Vigdis,Idgrod,Karita,Abelone,Adisla,Aela,Aeri,Agna,Agni,Agnis,Alea,Alfhild,Alva,Alvide,Annekke,Angi,Anise,Anska,Ari,Asta,Astrid,Beitild,Bergritte,Betrid,Birna,Bjartur,Bodil,Bolfrida,Boti,Breya,Brina,Britte,Bryling,Celeste,Dagny,Danica,Dorthe,Drifa,Edith,Eirid,Eisa,Elda,Elisif,Erdi,Eris,Evette,Eydvina,Faida,Fastred,Fjori,Fjola,Fjotra,Frabbi,Fralia,Freir,Frida,Fridrika,Fruki,Fura,Gerda,Gerdur,Gisli,Gormlaith,Grelka,Grelod,Greta,Grete,Gretta,Grosta,Gwendolyn,Haelga,Hafjorg,Hamal,Haran,Hefid,Helgi,Helgird,Hermir,Hert,Hestla,Hilde,Hillevi,Hjordis,Hoddreid,Hrefna,Hroki,Hulda,Iddra,Igrit,Illdi,Ingjard,Ingrid,Ingun,Iona,Irgnir,Ivara,Jala,Jonquil,Jora,Jordis,Katla,Katria,Klija,Laila,Lami,Lillith,Lisbet,Lydia,Lynly,Margret,Matlara,Maven,Minette,Mjoll,Narri,Nilsine,Njada,Nura,Olda,Olfina,Oriella,Orla,Rakel,Rigel,Rikke,Ruki,Serana,Silda,Sissel,Sofie,Sonir,Sorli,Susanna,Svana,Svari,Swanhvir,Sylgja,Tekla,Temba,Thaena,Threki,Tilde,Tilma,Tormir,Tova,Tyra,Una,Uthgerd,Valerica,Ysolda,Frikkhild,Afnhi,Alma,Gjarmal,Greca,Gulfreida,Haldwyn,Halfara,Heimunda,Jakidi,Leidmir,Meling,Olveidi,Rolunda,Adana,Adelhild,Adelil,Adelrine,Adelsin,Adla,Adrua,Aelakja,Aelirma,Aelm,Aelritta,Aera,Aerana,Aeridi,Aesa,Agila,Agka,Agnedir,Agnenor,Airia,Ajorda,Alana,Aleeka,Alfa,Alflunda,Algunda,Alhana,Alwyn,Ama,Amandtea,Amifar,Amihild,Amiiske,Amirudda,Amitra,Amwyn,Anaka,Anbara,Angetha,Anjolda,Anneke,Anrunn,Araki,Arani,Areca,Arnhilda,Arva,Asda,Asfredda,Asga,Asgi,Atgretha,Atli,Atodir,Attiri,Attiring,Attring,Aubykka,Auda,Aumfi,Autrae,Avwenn,Awyn,Axkiral,Axulfa,Balwyn,Beifja,Bekeigr,Bekka,Bekwine,Belfrost,Belofa,Bemfola,Beovar,Berala,Bergi,Bergitte,Beridi,Beritta,Berra,Betdis,Betedir,Betnarre,Birgitha,Bjernild,Bjertha,Bolfrosti,Bona,Bonafryd,Bonmund,Bonohild,Bonorvir,Bontilf,Bonwyn,Borahild,Borasa,Braning,Branir,Brankelvi,Brannis,Brecir,Brea,Breda,Bree,Brekalda,Bresa,Brey,Breyfridde,Brigette,Brima,Brimfja,Bringuna,Brittgerd,Brunka,Brunn,Bryfar,Brygelva,Bryring,Burbet,Cam,Cathja,Chalda,Chalwyn,Dagbara,Dagrunn,Daiske,Dalitra,Daljari,Dalmidi,Daneem,Danrine,Danylva,Deldwine,Delia,Deowyn,Didrika,Draljura,Drod,Drodda,Drosine,Droslynne,Drowyn,Edvilda,Eepa,Eerika,Eeze,Eibytte,Eilenda,Eiraki,Eirfa,Eila,Eirma,Eirul,Eitaki,Elfbetta,Elfriede,Eling,Elisgunne,Ellisif,Elpa,Elreid,Elsbytte,Elsenekka,Elslea,Elsmira,Emilinna,Ena,Engling,Enlaf,Enyra,Eoeilif,Eofel,Eoman,Eoram,Eorda,Eorim,Erekka,Eriann,Euda,Evigna,Evska,Eydreigga,Eydvi,Eyfja,Eyga,Fairynn,Faivera,Falaki,Faldar,Falethea,Falkyn,Falwyn,Farlia,Farvild,Faylva,Feiri,Fingrida,Fjogryd,Fjora,Fjorda,Fjoria,Fjorna,Fjorolfa,Fjurdora,Flicka,Fortuna,Fragrydde,Franja,Fraretha,Freca,Frehilde,Freigritte,Freiwen,Freki,Frena,Frera,Frerbild,Fresgil,Fresmara,Freyda,Freyleth,Fridda,Fridelja,Fridleif,Fridrethe,Friga,Frileka,Frina,Frirhild,Frirvid,Frodya,Frohilde,Frunda,Fruvar,Frynga,Fugrete,Fyrulde,Gabbi,Gabbidi,Gamdir,Gamlunda,Garfrost,Garri,Garrimar,Garvilda,Geidir,Geinarre,Geirilda,Geirvarda,Gekunn,Gerhyld,Gertrun,Gjailif,Gjaki,Gjargrydd,Gjarma,Gjarmi,Gjarmiddi,Gordjar,Greily,Grelaith,Grelrenn,Gretga,Grethaa,Grethveta,Gretolde,Gretsine,Greyga,Grida,Grig,Grigerda,Grundi,Grunhere,Grunirra,Gukirmar,Gul,Guldir,Gulfa,Gullveig,Gulvera,Gunneke,Gunnijira,Gunrietta,Gunthafur,Gunthe,Guridda,Gurilda,Guring,Gurkild,Gyda,Hadarre,Hafvira,Haki,Hakida,Hakra,Halbora,Hali,Hallfrida,Halmaera,Haltafi,Halva,Havild,Hama,Hanana,Hanmaer,Hannikke,Hannir,Hannura,Hautgerd,Hauti,Hedgirde,Hedrynne,Hedstild,Hef,Heggidi,Heggvir,Heiruna,Hel,Helfhild,Helgana,Helgith,Helgot,Helna,Helrytta,Helsi,Helunda,Hengeki,Herdora,Hergarda,Heslethe,Hethminda,Hidaver,Hil,Hildegard,Hildessa,Hildyva,Hilka,Hilvira,Himarit,Himela,Hingrid,Hiretta,Hishga,Hjaga,Hjagir,Hjagmoda,Hjalari,Hjalif,Hjara,Hjaralda,Hjarda,Hjarfi,Hjargredda,Hjargret,Hjelda,Hjolbel,Hjolvara,Hjorga,Hjorrenn,Hjotild,Hjotund,Hlakana,Hloelott,Hloenor,Hloke,Hlokela,Hlotild,Hodyette,Hola,Holdilf,Holsin,Hostia,Hraerfja,Hranasgi,Hranir,Hranura,Hrarlief,Hrasvard,Hrefgerda,Hreifryd,Hridi,Hroi,Hroja,Hrolda,Hrorleid,Hrorudda,Hrosaa,Hrosta,Hrot,Hrotreid,Hrottgreda,Huki,Huldressa,Huleida,Huolde,Hyava,Hyfta,Hylga,Hyunda,Idela,Idesa,Idirfa,Idona,Idvir,Ig,Igeke,Ilfete,Ilflynn,Illnorvira,Imwyn,Ingmund,Ingritha,Inguya,Innanir,Innbild,Innsold,Iosyl,Irga,Irgeikka,Irghild,Irgkya,Irna,Irnene,Iroda,Islinne,Isrudde,Itnette,Ittir,Ittirma,Jaddveig,Jadfari,Jadvar,Jaedya,Jaema,Jafelma,Jaffridde,Jaflinna,Jafola,Jafrera,Jafrost,Jaga,Jakieikka,Jakild,Jakja,Jakirfa,Jalarma,Jalrana,Jand,Janekke,Jardirr,Jareen,Jareki,Jaritra,Jarredda,Jaskar,Jindra,Jodis,Jofgreida,Joldora,Jolinne,Jolridda,Joraamun,Juda,Julni,Jylta,Jyrwinn,Kara,Karalgar,Kari,Katilda,Katja,Katnarre,Katti,Keldora,Kelgerde,Kerig,Khala,Kilava,Kjo,Knarri,Knumar,Knutrida,Koljir,Kora,Korleva,Korra,Koruni,Korvynn,Krasela,Krastir,Kyrwyn,Lafka,Lareika,Larsa,Larula,Larynn,Leid,Leiddrod,Leidela,Leidven,Leifly,Leifnar,Leifunda,Leimaer,Leofa,Liezl,Liljard,Lilmyra,Linlia,Linlyne,Linnea,Lis,Lisylde,Lorela,Loria,Lornor,Lothafi,Lyn,Lynfa,Lyris,Lyrvekka,Mabbritte,Madleena,Madythe,Maela,Maeri,Maesa,Magreta,Mai,Maigarda,Malana,Malfa,Malma,Mareki,Marga,Margot,Margretha,Marla,Maveld,Mawine,Maylde,Medild,Medveig,Meggarda,Megvarda,Melda,Meldagar,Melora,Mera,Merfa,Merfnovira,Mergarda,Merthida,Mervynne,Mistja,Mjolen,Molana,Molgrydd,Molla,Molura,Mornhilde,Morryn,Nadya,Naer,Narana,Narvilda,Nelfhild,Nelfthea,Nelfud,Nelgarde,Nelhilda,Nelmryn,Nettanir,Nettira,Nikaolde,Nikolvara,Nila,Ninetha,Njoll,Norra,Nurnhilde,Obetta,Oda,Odana,Odela,Odhilda,Odlynd,Odvar,Odvild,Okkhild,Okula,Oldura,Olfjarda,Olfrid,Olfwenn,Olith,Olwenna,Onda,Ophalia,Ophanta,Oranir,Orguerite,Ormi,Orolo,Osanne,Otdis,Othora,Othvild,Otried,Ottaesa,Pacta,Piet,Raeirfa,Raena,Raerana,Raevild,Ragna,Ragria,Raki,Rakiel,Rangbarda,Rena,Rannveig,Reja,Renna,Rennbjara,Rennilde,Renrytte,Resrytte,Restla,Reybyt,Rhainne,Rhealt,Rinda,Robjorn,Rogrydda,Roki,Rokrya,Rola,Rolara,Rosirma,Rosrytta,Roxwinne,Rudagalfa,Rudgreid,Runaki,Runehild,Sas,Sasbekke,Seirida,Selma,Sernea,Sevida,Shana,Shannia,Shawna,Sigva,Silgrett,Siriaki,Sirimunda,Sirirenna,Sirkidur,Sislea,Sisrytta,Sivgrete,Sivguna,Sjarakki,Sjarla,Skaldara,Skjor,Slasif,Slatild,Slonanir,Slonn,Snaehild,Snaeke,Sofnete,Soki,Solding,Sondi,Songar,Songdis,Sonolia,Sonya,Soralfa,Steirid,Stodlod,Stodrir,Storbarda,Suretta,Suwenna,Svanhildr,Svargret,Svaritra,Svarjarda,Svarlyn,Sverana,Sverke,Svilda,Swangar,Syl,Tela,Temgrid,Thagarte,Thalda,Thalwyn,Thastla,Thelfreca,Theofa,Theonette,Theoria,Thogalda,Thogana,Thoggrytte,Thondir,Thonja,Thonki,Thonlynn,Thora,Thoreki,Thorfa,Thorka,Thorkar,Thorwyn,Thronoda,Thvidi,Tidave,Tidbrosti,Tidvir,Tillaki,Tillrani,Tilwen,Tiredir,Tirlarnar,Tirora,Todimar,Toldi,Tolfalki,Tolfari,Tolfrika,Tolgredda,Tolli,Torlyn,Toryl,Tranya,Triana,Tridi,Trigrid,Trihild,Triirma,Triveta,Triwenna,Troki,Troulda,Trynhild,Tyrnea,Tyrvera,Ulfra,Ulfsild,Ursvette,Vaer,Vaerarre,Vaereid,Vaetreta,Valdia,Valgritta,Valinka,Vaoldelf,Vareda,Varhilda,Vari,Veranir,Vidda,Vig,Viglir,Vigrida,Vigwenn,Vigya,Viri,Virmar,Virngring,Viveka,Voddreid,Voria,Vothing,Watha,Winfred,Yiri,Yllolda,Ylsi,Yngmaer,Yorda,Yrgrid,Yrkvild,Yrna,Yrning,Yrsild,Yrsrytt,Yrssteir,Ysgild,Ysrudde,Yurta,Zaan,Brynhildur,Frenn,Staki,Anga,Asfrid,Bara,Batild,Bera,Botilda,Dalla,Eifid,Einora,Enga,Eriana,Gleda,Gritild,Ildar,Ingar,Jonna,Kera,Nera,Solveig,Torri,Vilhelmina,Froa,Eria,Finna,Freida,Frilgeth,Fredo,Fjotli,Freydis,Froda,Greyf,Grunilda,Hela,Helgreir,Hildrif,Hjolren,Hranvard,Jofrior,Josea,Katisha,Koralla,Lahpyrcopa,Laicifitra,Liesl,Lilija,Mabjaarn,Macalla,Nette,Ogra,Reyda,Ruelde,Sorga,Vunhilde",
-	"nord.family": [
+	"nord.family": {
+		"type": "compound",
+		"data": {
+			// TODO: add source names that are known in-game so the generator avoids repeating them
+			"patterns": ["adj-noun",2.75,"noun,verber","noun-verber","like-part",1.8,"like,part",0.6,"adj-like",2.25,"adj-verber","the adj",0.5,"the verber",0.4],
+			"components": {
+				"adj": (_nord_adj=[
+					"far","half","long","short","tall","fair","stout","thick","thin","wide","large","small","weak","strong","soft","hard",
+					"stern","cruel","kind","pure","foul","wild","secret","bitter","sweet","sour","fell","glad","strange","lazy","proud","fleet","slow","wise",
+					"bright","dark","sharp","dull","hot","cold","good","bad",
+					"white","red","green","blue","gold","brown","silver","gray","black"
+				]),
+				"part": (_nord_part=[
+					"cloak","hood","shirt","coat","shoes","boots","gloves","pants",
+					"hand","fist","foot","head","arm","legs","back","ears","eyes","hair","belly","scar","face","brow","beard","blood","heart","finger","tooth","tongue","voice","jaw",
+					"shield","sword","axe","hammer","helm","blade","bow","arrow"
+				]),
+				"noun": [
+					// most of these are repeated in "like"
+					"wind","sea","storm","sand","fire","wood","spring","tree","stone",
+					"fire","ice","frost","sea","rain","snow","sun","night","winter","summer",
+					"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
+					"song","hearth","forge",
+					"wall","home","book","drink",
+					"trouble","death","war","rest","work","revel"
+				].concat(_nord_part),
+				"verber": (_nord_verber=[
+					"beater","breaker","bringer","caller","catcher","chaser","cleaver","crusher","cutter","dancer","dreamer","fighter","finder","hater","hider","hugger","hunter","jumper","keeper","lover","maker","mender","mover","puncher","pusher","seeker","shaper","singer","slayer","slicer","smasher","squeezer","taker","tamer","thrower","walker","watcher","weaver",
+					"friend","foe","smith","skald","sage"
+				]),
+				"like": [
+					"wind","sea","storm","sand","fire","wood",
+					"fire","ice","frost","sea","rain","snow","sun","night","cloud","spring","fall","winter","summer",
+					"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
+					"song","hearth","forge",
+					"steel","iron","rock","stone","wood","silver","gold",
+					"honey","milk","mead","wine",
+					"blood","bone",
+					"war","battle"
+				],
+				"the": ["the"]
+			},
+			"post": (name,data,params) => name.replace(/^\bThe\b/i,'the'),
+			"legends": [
+				{"label": "nord-family", "text": "Known surnames from lore aren't included for comparison"}
+			]
+		}
+	},
+	"khajiit.family": [
+		{"type": "empty"}, 9,
 		{
 			"type": "compound",
 			"data": {
-				// TODO: add source names that are known in-game so the generator avoids repeating them
-				"patterns": ["adj-noun",2.75,"noun,verber","noun-verber","like-part",1.8,"like,part",0.6,"adj-like",2.25],
-				"components": {
-					"adj": [
-						"far","half","long","short","tall","fair","stout","thick","thin","wide","large","small","weak","strong","soft","hard",
-						"stern","cruel","kind","pure","foul","wild","secret","bitter","fell","glad","strange","lazy",
-						"bright","dark","sharp","dull","hot","cold","good","bad",
-						"white","red","green","blue","gold","brown","silver","gray","black"
-					],
-					"part": (_nord_part=[
-						"cloak","hood","shirt","coat","shoes","boots","gloves","pants",
-						"hand","fist","foot","head","arm","legs","back","ears","eyes","hair","belly","scar","face","brow","beard","blood","heart","finger","tooth","tongue","voice",
-						"shield","sword","axe","hammer","helm","blade","bow","arrow"
-					]),
-					"noun": [
-						// most of these are repeated in "like"
-						"wind","sea","storm","sand","fire","wood","spring","tree","stone",
-						"fire","ice","frost","sea","rain","snow","sun","night","winter","summer",
-						"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
-						"song","hearth","forge",
-						"wall","home","book","drink",
-						"trouble","death","war","rest","work","revel"
-					].concat(_nord_part),
-					"verber": [
-						"beater","breaker","caller","chaser","cleaver","crusher","cutter","dancer","fighter","finder","hater","hugger","hunter","keeper","lover","maker","mender","puncher","seeker","shaper","singer","slayer","slicer","smasher","squeezer","tamer","thrower","walker","watcher","weaver",
-						"friend","foe","smith","skald"
-					],
-					"like": [
-						"wind","sea","storm","sand","fire","wood",
-						"fire","ice","frost","sea","rain","snow","sun","night","cloud","spring","fall","winter","summer",
-						"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
-						"song","hearth","forge",
-						"steel","iron","rock","stone","wood","silver","gold",
-						"honey","milk","mead","wine",
-						"blood","bone",
-						"war","battle"
-					]
-				},
-				"legends": [
-					{"label": "nord-family", "text": "Known surnames from lore aren't included for comparison"}
-				]
+				"patterns": ["adj",5,"verber",2],
+				"components": {"adj": _nord_adj, "verber": _nord_verber},
+				"post": (name,data,params) => `the ${name}`
 			}
 		}
 	],
@@ -522,7 +542,7 @@ var names = {
 			"names": "Adaire,Adal,Adbinder,Adian,Adire,Adius,Adlock,Ador,Adorin,Adthar,Adus,Adwatch,Caemaire,Caemal,Caembinder,Caemian,Caemire,Caemius,Caemlock,Caemor,Caemorin,Caemthar,Caemus,Caemwatch,Elsinaire,Elsinal,Elsinbinder,Elsinian,Elsinire,Elsinius,Elsinlock,Elsinor,Elsinorin,Elsinthar,Elsinus,Elsinwatch,Gaeaire,Gaeal,Gaebinder,Gaeian,Gaeire,Gaeius,Gaelock,Gaeor,Gaeorin,Gaethar,Gaeus,Gaewatch,Grayaire,Grayal,Graybinder,Grayian,Grayire,Grayius,Graylock,Grayor,Grayorin,Graythar,Grayus,Graywatch,Highaire,Highal,Highbinder,Highian,Highire,Highius,Highlock,Highor,Highorin,Highthar,Highus,Highwatch,Joraire,Joral,Jorbinder,Jorian,Jorire,Jorius,Jorlock,Joror,Jororin,Jorthar,Jorus,Jorwatch,Larethaire,Larethal,Larethbinder,Larethian,Larethire,Larethius,Larethlock,Larethor,Larethorin,Lareththar,Larethus,Larethwatch,Silinaire,Silinal,Silinbinder,Silinian,Silinire,Silinius,Silinlock,Silinor,Silinorin,Silinthar,Silinus,Silinwatch,Spellaire,Spellal,Spellbinder,Spellian,Spellire,Spellius,Spelllock,Spellor,Spellorin,Spellthar,Spellus,Spellwatch,Stormaire,Stormal,Stormbinder,Stormian,Stormire,Stormius,Stormlock,Stormor,Stormorin,Stormthar,Stormus,Stormwatch,Thromaire,Thromal,Thrombinder,Thromian,Thromire,Thromius,Thromlock,Thromor,Thromorin,Thromthar,Thromus,Thromwatch,Direnni,Aundae,Camoran,Frey,Rilis,Aliaria,AranaAldmeri,Areleth,Ateldil,Blenwyth,Brightsteel,Duure,Favrete,Galerion,Loganne,Lloderion,Ravenwatch,Rumilion,Temolire,Urayel,Wethrin,Aldmeri,Auralus,Corelanya,Culanarin,Egun,Enruneldinion,Errinorne,Firlamil,Hilnore,Inecil,Itelnoril,Nivulirel,Numralion,Piryaden,Salolinwe,Ternerben",
 			"post": (name) => `<span class="altmer-family">${name}</span>`,
 			"legends": [
-				{"label": "altmer-family", "text": "Altmer surnames are usually too long for casual use and seldom appear in lore"}
+				{"label": "altmer-family", "text": "Surnames are included as possibilities, but most Altmer don't use them in outside society."}
 			]
 		}
 	},
@@ -532,15 +552,7 @@ var names = {
 		{
 			"type": "markov",
 			"data": {
-				"names": "K'Elmar,Hawker,Mirel,Ruuz,Stacey,Aldwyr,at-Tarin,af-Perah,at-Owynok,at-Tura,af-Jahannif,af-Jamadin,af-Nimr,af-Ozalan,at-Amil,at-Areshu,at-Ariya,at-Aswala,at-Elett,at-Lehiel,at-Phintos,at-Ramdud,at-Toura,Hunding,Sahan,af-Ahmus,af-Angilia,af-Armin,af-Ashora,af-Azik,af-Bazra,af-Davood,af-Dometri,af-Dushana,af-Ebdoh,af-Ganet,af-Ghada,af-Guyeline,af-Haba,af-Hadajja,af-Hafza,af-Hazifah,af-Hisham,af-Islah,af-Izla,af-Jahi,af-Kardyn,af-Karra,af-Katayoun,af-Kimiya,af-Mahala,af-Mubdi,af-Naifa,af-Nazila,af-Owlin,af-Qerik,af-Ramand,af-Rasha,af-Tasa,af-Whyrdh,Alielle,at-Abbas,at-Ajwan,at-Amjad,at-Baqar,at-Bergama,at-Dolmir,at-Dorcolm,at-Ebdoh,at-Fada,at-Fara,at-Gamati,at-Ganet,at-Gar,at-Ginal,at-Glina,at-Halma,at-Hassef,at-Hawraz,at-Hollus,at-Housel,at-Jafra,at-Jehat,at-Kalan,at-Karim,at-Khorajah,at-Makela,at-Mardeen,at-Marimah,at-Morad,at-Naruk,at-Nazdar,at-Nazim,at-Ordzan,at-Pawan,at-Pykel,at-Renazh,at-Rusa,at-Sadil,at-Sal,at-Salan,at-Sentinel,at-Shadal,at-Tamina,at-Wardiya,at-Warhpal,at-Werzhan,at-Wildur,at-Yashar,Hallin,Leki,Lemaitre,Morel,Nasir,Rajida,Sesnit,Shinji,Stictal,Tu'wha,Ababneh,at-Addin,at-Inzil,at-Traeh,Groevinger,Lainlyn,Melarg",
-				"post": (name,data,params) => {
-					var m = name.match(/^(a[flt])-/i);
-					return m ? `<span class="redguard-prefix-${m[1].toLowerCase()}">${name}</span>` : name;
-				},
-				"legends": [
-					{"explains": "redguard-prefix-at", "text": "at- = \"direct descendant of\""},
-					{"explains": "redguard-prefix-af", "text": "af- = \"related to\""}
-				]
+				"names": "K'Elmar,Hawker,Mirel,Ruuz,Stacey,Aldwyr,at-Tarin,af-Perah,at-Owynok,at-Tura,af-Jahannif,af-Jamadin,af-Nimr,af-Ozalan,at-Amil,at-Areshu,at-Ariya,at-Aswala,at-Elett,at-Lehiel,at-Phintos,at-Ramdud,at-Toura,Hunding,Sahan,af-Ahmus,af-Angilia,af-Armin,af-Ashora,af-Azik,af-Bazra,af-Davood,af-Dometri,af-Dushana,af-Ebdoh,af-Ganet,af-Ghada,af-Guyeline,af-Haba,af-Hadajja,af-Hafza,af-Hazifah,af-Hisham,af-Islah,af-Izla,af-Jahi,af-Kardyn,af-Karra,af-Katayoun,af-Kimiya,af-Mahala,af-Mubdi,af-Naifa,af-Nazila,af-Owlin,af-Qerik,af-Ramand,af-Rasha,af-Tasa,af-Whyrdh,Alielle,at-Abbas,at-Ajwan,at-Amjad,at-Baqar,at-Bergama,at-Dolmir,at-Dorcolm,at-Ebdoh,at-Fada,at-Fara,at-Gamati,at-Ganet,at-Gar,at-Ginal,at-Glina,at-Halma,at-Hassef,at-Hawraz,at-Hollus,at-Housel,at-Jafra,at-Jehat,at-Kalan,at-Karim,at-Khorajah,at-Makela,at-Mardeen,at-Marimah,at-Morad,at-Naruk,at-Nazdar,at-Nazim,at-Ordzan,at-Pawan,at-Pykel,at-Renazh,at-Rusa,at-Sadil,at-Sal,at-Salan,at-Sentinel,at-Shadal,at-Tamina,at-Wardiya,at-Warhpal,at-Werzhan,at-Wildur,at-Yashar,Hallin,Leki,Lemaitre,Morel,Nasir,Rajida,Sesnit,Shinji,Stictal,Tu'wha,Ababneh,at-Addin,at-Inzil,at-Traeh,Groevinger,Lainlyn,Melarg"
 			}
 		}, 4,
 		{
@@ -550,10 +562,7 @@ var names = {
 				"components": {
 					"place": ["Abah","Abec","Abibon","Akir","Antiphyllos","Ash'abah","Azif","Belkarth","Bergama","Cespar","Drangstor","Elinhir","Gilane","Glessa","Hallin","Hareem","Hegathe","Herne","Hunding","Iskour","Kozanset","Masri","Miran","Morwha","Myrkwasa","Natedan","Ojwambu","Ragath","Rihad","Satakalaam","Saran","Sentinel","Skaven","Tahud","Taneth","Tava","Thir"]
 				},
-				"post": (name,data,params)=>`<span class="redguard-prefix-al">al-${name}</span>`,
-				"legends": [
-					{"explains": "redguard-prefix-al", "text": "al- = \"from\" (real place names aren't included in this generator)"}
-				]
+				"post": (name,data,params)=>`al-${name}`
 			}
 		}
 	],
@@ -575,15 +584,15 @@ var names = {
 					"chews","cleans","conjures","counts","curses","drinks","eats","fears","fights","forgets","hears","hides","hunts","kills","paints","sees","shakes","slays","stabs","stalks","steals","washes","watches","wins"
 				]),
 				"trverbs": _argonian_tamrielic_anyverbs.concat([
-					"abides","bends","bites","breaks","catches","claws","cuts","defeats","disrespects","doubts","drops","earns","feels","finds","flicks","follows","forges","gathers","grinds","has","hates","hauls","hits","honors","ignores","keeps","knows","licks","loses","makes","misses","mocks","names","picks","ruins","seeks","spills","takes","tames","tastes","throws","touches","tracks","wears","weaves",
+					"abides","bends","bites","breaks","catches","claws","cuts","defeats","disrespects","doubts","drops","earns","feels","finds","flicks","follows","forges","gathers","grinds","has","hates","hauls","hits","honors","ignores","keeps","knows","licks","loses","makes","misses","mocks","names","picks","ruins","seeks","spills","takes","tames","tastes","tends","throws","touches","tracks","wears","weaves",
 					"afraid-of"
 				]),
 				"intrverbs": _argonian_tamrielic_anyverbs.concat([
-					"basks","bathes","complains","dances","dreams","flirts","gazes","hops","laughs","leaps","learns","listens","looks","moves","plans","runs","sails","shouts","sings","sleeps","smiles","speaks","spits","stands","stares","swims","talks","thinks","trades","trips","waits","walks","wanders","whispers","whistles","wishes"
+					"basks","bathes","complains","dances","dreams","flirts","gazes","hops","laughs","leaps","learns","listens","looks","moves","plans","runs","sails","shouts","sings","sleeps","smiles","sneaks","speaks","spits","stands","stares","swims","talks","thinks","trades","trips","waits","walks","wanders","whispers","whistles","wishes","writes"
 				]),
 				"adj": [
 					"far","half","long","short","tall","fair","stout","thick","thin","wide","big","small","weak","strong","mild","soft","hard",
-					"stern","pure","wild","secret","bitter","fell","glad","silly","solemn","angry","pretty","ugly","strange","weird","greedy",
+					"stern","pure","wild","secret","bitter","sweet","sour","fell","glad","silly","solemn","angry","pretty","ugly","strange","weird","greedy",
 					"bright","dark","dull","hot","cold","good","bad",
 					"iron",
 					"white","red","green","blue","gold","yellow","brown","black","silver","gray"],
@@ -599,7 +608,7 @@ var names = {
 					"thing","secret","jewel","coin","pocket",
 					// repeated under part (with some exceptions)
 					"shoe","boot","glove","shirt","coat",
-					"hand","fist","foot","head","arm","leg","back","eye","scale","belly","scar","face","brow","heart","finger","tongue","claw","tooth","tail","wound","voice",
+					"hand","fist","foot","head","arm","leg","back","eye","scale","belly","scar","face","brow","heart","finger","tongue","claw","tooth","tail","wound","voice","jaw",
 					"shield","sword","axe","hammer","helm","blade","arrow"
 				]).concat([	// non-pluralizable or collective singular words
 					"sun","dark","darkness","shade","moonlight","twilight","fog","mud","grass","muck","sap",
@@ -613,7 +622,7 @@ var names = {
 				]),
 				"part": [
 					"cloak","hood","shirt","coat","shoes","boots","gloves","pants",
-					"hand","fist","foot","head","arm","leg","back","eye","scales","belly","scar","face","brow","blood","heart","finger","tongue","claw","tooth","tail",
+					"hand","fist","foot","head","arm","leg","back","eye","scales","belly","scar","face","brow","blood","heart","finger","tongue","claw","tooth","tail","jaw",
 					"hands","fists","feet","arms","legs","ears","eyes","scars","fingers","claws","teeth","voice",
 					"shield","sword","axe","hammer","helm","blade",
 					"tracks","wits","share","due","friends","foes","kin"
@@ -714,6 +723,17 @@ var names = {
 	"argonian.tamrielic.female": _argonian_tamrielic
 };
 
+var notes = {
+	"altmer": "Altmeri surnames are usually too long for casual use, and seldom appear in lore. The surnames in this generator are therefore built based on a very limited pool, but most Altmer won't use surnames anyway.",
+	"argonian.tamrielic": "The generator for Argonian names has no innate concept of which words actually work together, so a name like Laughs-to-Wind might be produced that's nonsense. These are just idea seeds for you, so if something comes close enough to a workable name, tweak it as you will.",
+	"bosmer": "Bosmer don't use surnames.",
+	"dunmer.mainland": "Mainland Dunmer are about 85% of the Dunmer population. The current generator is seeded with the names of great houses, but generally avoids them in its output as it would any other source names.",
+	"dunmer.ashlander": "Ashlanders make up about 15% of the Dunmer in Tamriel.",
+	"khajiit": "Khajiit don't use surnames, at least not since Elder Scrolls: Redguard. Therefore the pool of surnames is unreliable. They do occationally use titles, e.g. Maiq the Liar, or more rarely a Nord-style surname like Iron-Ear. The generator's suggestions for titles are limited.",
+	"nord": "Nord surnames are usually similar to honorifics, chosen to speak to some aspect of the person rather than handed down through family (except in clans). These are usually compound words, which may or may not have a hyphen; the generator isn't always good at choosing words that make sense together. Sometimes Nords use titles like \"the Fleet\"; the title choices available in this generator are limited.",
+	"redguard": "The vast majority of Redguard surnames start with <i>at-</i> (direct descendant of), <i>af-</i> (related to), or <i>al-</i> (from this place). Other names do exist in lore and have been used to seed the generator, but the pool of such names is very limited. The al- names include known places in Hammerfell, including some such names that aren't seen in lore."
+};
+
 var generators={};
 
 function changeselect(opt) {
@@ -724,6 +744,13 @@ function changeselect(opt) {
 		if(names[n]) generators[s] = new Generator(names[n],n);
 	}
 	generatelist("male");
+
+	var nd = document.querySelector('#notes');
+	if(notes[opt]) {
+		nd.innerHTML = notes[opt];
+		nd.style.display = "";
+	}
+	else nd.style.display = "none";
 }
 
 function generatelist(gender) {
@@ -736,8 +763,9 @@ function generatelist(gender) {
 	var gens_used=[generators[gender]];
 	if(generators.family) gens_used.push(generators.family);
 	for(var i=0; i<nameCount; ++i) {
-		if(generators.family) names.push(generators[gender].Generate(prm)+" "+generators.family.Generate(prm));
-		else names.push(generators[gender].Generate(prm));
+		let name = generators[gender].Generate(prm);
+		if(generators.family) name += " "+generators.family.Generate(prm);
+		names.push(name.trim());
 	}
 	let outdiv = document.querySelector('#results');
 	document.querySelector('#results-top').innerHTML = toCaps(gender)+' '+namesel.options[namesel.selectedIndex].innerHTML;
@@ -833,8 +861,11 @@ document.addEventListener('DOMContentLoaded', ()=>changeselect(document.getEleme
 	<div id="results"></div>
 </div>
 <div id="legend"></div>
+<div id="notes"></div>
 
 <div id=links>
+<p><a href="readme.md">Overview / technical notes</a></p>
+
 <a href="https://ko-fi.com/lummoxjr" target="_blank"><img src="ko-fi banner.png"></a>
 </div>
 
