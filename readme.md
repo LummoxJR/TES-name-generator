@@ -1,6 +1,6 @@
 ## TES Name Generator
 
-This generator was built to support creative projects for Skyrim modding, but should apply to any Elder Scrolls game. Other generators are available online, and are worth checking out too because they'll produce different results. In actuality this is actually a series of generators, some a little better than others. The hope is that even if you don't see a name that suits what you want, you'll get ideas you can build on for yourself.
+This generator was built to support creative projects for Skyrim modding, but should apply to any Elder Scrolls game. Other generators are available online, and are worth checking out too because they'll produce different results. In actuality this is a series of generators, some a little better than others. The hope is that even if you don't see a name that suits what you want, you'll get ideas you can build on for yourself.
 
 To use the generator, just choose the race from the dropdown, and click a button for the gender. A list of names will appear. Click any name to copy it to your clipboard. I recommend keeping a file of "good idea" names that struck your fancy for later use. In its current iteration this generator will not save names for you.
 
@@ -24,7 +24,7 @@ Because it doesn't always know if two words work properly together, it may also 
 * **Argonian** names come in Jel and Tamrielic variants.
 * **Bosmer** and **Khajiit** don't use surnames.
 * **Dunmer** names come in mainland and Ashlander variants. About 15% of Dunmer are Ashlanders.
-* **Redguard** surnames almost always are in the form of at-Person or af-Person indicating a familial relationship, or al-Place for a place of origin, but there are some exceptions that were included as source names. A list of possible places has been included for al- names, even where those names don't appear in source.
+* **Redguard** surnames almost always are in the form of at-Person or af-Person indicating a familial relationship, or al-Place for a place of origin, but there are some exceptions that were included as source names. A list of locations in Hammerfell has been included for al- names, even where those names don't appear in source.
 
 ## Source names
 
