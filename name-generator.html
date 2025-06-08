@@ -224,7 +224,7 @@ function addValues(a, b) {
 }
 
 function pluralize(word) {
-	const is_plural=["feet","deer","gold","men","mer","khajiit","fish"];
+	const is_plural=["feet","deer","gold","men","mer","khajiit","fish","altmer","bosmer","dunmer","khajiit"];
 	const known_plurals={"man":"men","woman":"women","foot":"feet","tooth":"teeth","leaf":"leaves"};
 
 	if(typeof(word) != 'string') return word;
@@ -489,10 +489,10 @@ var names = {
 				"noun": [
 					// most of these are repeated in "like"
 					"wind","sea","storm","sand","fire","wood","spring","tree","stone",
-					"fire","ice","frost","sea","rain","snow","sun","night","winter","summer",
+					"fire","ice","frost","sea","rain","snow","smoke","sun","night","winter","summer",
 					"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
 					"song","hearth","forge",
-					"wall","home","book","drink",
+					"wall","home","book","saga","tale","word","drink",
 					"trouble","death","war","rest","work","revel"
 				].concat(_nord_part),
 				"verber": (_nord_verber=[
@@ -501,7 +501,7 @@ var names = {
 				]),
 				"like": [
 					"wind","sea","storm","sand","fire","wood",
-					"fire","ice","frost","sea","rain","snow","sun","night","cloud","spring","fall","winter","summer",
+					"fire","ice","frost","sea","rain","snow","smoke","sun","night","cloud","spring","fall","winter","summer",
 					"bear","wolf","fox","raven","troll","giant","skeever","horse","spider","hare",
 					"song","hearth","forge",
 					"steel","iron","rock","stone","wood","silver","gold",
@@ -598,7 +598,7 @@ var names = {
 					"white","red","green","blue","gold","yellow","brown","black","silver","gray"],
 				"noun": (_argonian_tamrielic_noun=[
 					"day","night","star","shadow","light","murk","wind","fire","cloud","mist",
-					"water","river","pool","lake","stream","wave","swell","ocean","tree","leaf","mire","swamp","garden","field","wild","marsh",
+					"water","river","pool","lake","stream","wave","swell","ocean","tree","leaf","mire","swamp","garden","field","wild","marsh","hole",
 					"rock","stone","root","moss","rush","mushroom","flower","herb","vine",
 					"fish","meal","meat","frog","turtle","beast","egg",
 					"dream","thought","grave","bone","ghost",
@@ -606,13 +606,14 @@ var names = {
 					"wall","door","roof","road",
 					"potion","spell","drink",
 					"thing","secret","jewel","coin","pocket",
+					"song","story","word","book",
 					// repeated under part (with some exceptions)
 					"shoe","boot","glove","shirt","coat",
 					"hand","fist","foot","head","arm","leg","back","eye","scale","belly","scar","face","brow","heart","finger","tongue","claw","tooth","tail","wound","voice","jaw",
 					"shield","sword","axe","hammer","helm","blade","arrow"
 				]).concat([	// non-pluralizable or collective singular words
-					"sun","dark","darkness","shade","moonlight","twilight","fog","mud","grass","muck","sap",
-					"nothing","everything","blood","gold","iron","roof",
+					"sun","dark","darkness","shade","moonlight","twilight","fog","mud","grass","muck","sap","smoke",
+					"nothing","everything","blood","gold","iron",
 					"cloak","hood"
 				]),
 				"nouns": _argonian_tamrielic_noun.map(pluralize).concat([
@@ -628,22 +629,10 @@ var names = {
 					"tracks","wits","share","due","friends","foes","kin"
 				],
 				"prep": [
-					"about","about","around",
-					"at","at","at","at","at","at","at","at","at","at",
-					"beneath","between","by","for",
-					"from","from","from","from","from",
-					"in","in","in","in","in","in","in","in","in","in",
-					"near",
-					"of","of","of","of","of","of","of","of","of","of",
-					"on","on","on",
-					"over","over",
-					"to","to","to","to","to","to","to","to","to","to",
-					"through","under",
-					"with","with","with","with","with","with","with","with","with","with",
-					"without","without","without","without"
+					"about",2,"along","around","at",10,"away-from","beneath","between","by","for","from",5,"in",10,"into","near","of",10,"on",3,"onto","over",2,"to",10,"toward","through","under","with",10,"without",4
 				],
 				"adv": [
-					"much","often","seldom","hardly","never","always",
+					"much","often","seldom","hardly","never","always","sometimes",
 					"well","poorly","badly","closely","from-Afar",
 					"swiftly","quickly","slowly","lightly","heavily",
 					"silently","loudly","gently","softly","roughly","carefully",
