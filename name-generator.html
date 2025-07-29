@@ -852,7 +852,9 @@ var names = {
 			],
 			"deweightFactor": 0.01	// the smaller sample size benefits from more aggressive deweighting
 		}
-	}
+	},
+	"maormer.male": "Acamas,Aluvus,Arstul,Artellas,Aryaamo,Blanchete,Camandar,Cingulnya,Colaadron,Eilgun,Fandomoth,Glenormir,Goriadh,Heculoa,Herelire,Iphidamas,Isanmetil,Jyklos,Kanebar,Konnugil,Kovax,Laniwys,Laredon,Larnil,Linundil,Liondil,Lylanar,Mazolon,Mormelcarion,Morteth,Nalos,Neiral,Nemun,Nilidel,Norevalion,Noryesar,Numadir,Numirril,Ohmanil,Parondo,Pelius,Qraalel,Rodros,Silengos,Tenerive,Tildaro,Tunnanial,Turlassil,Uldor,Ulondil,Urlsar,Uumernenil,Valaran,Veshin,Viscarne,Dolorion,Gandelec,Linvalor,Loruuyamo,Malleroth,Ohmirril,Orgnum,Sargasso,Siraesar,Uhlchesis",
+	"maormer.female": "Aerandosa,Anenelle,Breyane,Castire,Cectyda,Chryseis,Chyrisnia,Cindeval,Cinurmion,Cirwynia,Delades,Delifin,Despina,Ellorien,Firyanume,Guldarol,Hasawen,Hetsha,Ilyria,Irinwe,Ismenida,Ithala,Jahlasri,Lillelril,Loraviel,Maelyeya,Minahel,Neidir,Nerinie,Nielolin,Noralin,Norilla,Ohalorne,Panardil,Penanlinwe,Quenisse,Quergura,Sameht,Sarragaer,Siravaen,Sorticthel,Taleria,Terirwen,Uldiss,Umuor,Vasha,Veloran,Vindaire,Vinsha,Virindi,Yalorasse,Chrysina,Kaalelrith,Neri"
 };
 
 var notes = {
@@ -862,6 +864,7 @@ var notes = {
 	"dunmer.mainland": "Mainland Dunmer are about 85% of the Dunmer population. The current generator is seeded with the names of great houses, but generally avoids them in its output as it would any other source names.",
 	"dunmer.ashlander": "Ashlanders make up about 15% of the Dunmer in Tamriel.",
 	"khajiit": "Khajiit don't use surnames, at least not since Elder Scrolls: Redguard. Therefore the pool of surnames is unreliable. They do occationally use titles, e.g. Maiq the Liar, or more rarely a Nord-style surname like Iron-Ear. The generator's suggestions for titles are limited.",
+	"maormer": "Lore on Maormer names is extremely limited, so the available pool of source names is very small. Repetition and overfitting are likely.",
 	"nord": "Nord surnames are usually similar to honorifics, chosen to speak to some aspect of the person rather than handed down through family (except in clans). These are usually compound words, which may or may not have a hyphen; the generator isn't always good at choosing words that make sense together. Sometimes Nords use titles like \"the Fleet\"; the title choices available in this generator are limited.",
 	"reachman": "Lore on Reachman names is limited, so the available pool of source names is very small. Repetition and overfitting are likely.",
 	"redguard": "The vast majority of Redguard surnames start with <i>at-</i> (direct descendant of), <i>af-</i> (related to), or <i>al-</i> (from this place). Other names do exist in lore and have been used to seed the generator, but the pool of such names is very limited. The al- names include known places in Hammerfell, including some such names that aren't seen in lore."
@@ -978,6 +981,7 @@ document.addEventListener('DOMContentLoaded', ()=>changeselect(document.getEleme
 			<option value="dunmer.ashlander">Dunmer Names (Ashlander)</option>
 			<option value="imperial">Imperial Names</option>
 			<option value="khajiit">Khajiit Names</option>
+			<option value="maormer">Maormer Names</option>
 			<option value="nord" selected>Nord Names</option>
 			<option value="orc">Orc Names</option>
 			<option value="reachman">Reachman Names</option>
