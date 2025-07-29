@@ -375,6 +375,82 @@ function Markov(names, params) {
 	}
 }
 
+function canChooseDefault(item,part,state) {
+	if(!state?.last) return true;
+	// prevent words like blood and dancer from forming a compound
+	// also do this with vowels
+	if(state.joiner == ',') {
+		let ll=state.last.slice(-1),nl=item.substring(0,1);
+		if(ll == nl) return false;
+		if(ll.match(/[aeiou]/) && nl.match(/[aeiou]/)) return false;
+		if(state.last.slice(-2) == item.substring(0,2)) return false;	// handle cases like th, ch, etc.
+	}
+	return true;
+}
+
+function buildFollowRules(rules,fallback) {
+	fallback = fallback || canChooseDefault;
+	function fb(t) {return fallback.apply(t,arguments);}
+	return function(item,part,state) {
+		if(!state) return fb(this);
+		for(let ruletype of Object.keys(rules)) {
+			let word1, op, word2, r=rules[ruletype], s, idx, hit;
+			[word1,op,word2] = ruletype.split(/(<<?|>>?)/);
+			// before<after means immediately before
+			// before<<after means somewhere before
+			if(op == '<' || op == '<<') {				
+				//console.log(`Checking ${part} ${item} for ${state.pattern}: ${word1} ${op} ${word2}=${state.parts?.indexOf(word2,state.index+1)}`);
+				// choosing the preceding word; make sure it can be followed by something valid in this pattern
+				if(part == word1 && (idx=state.parts?.indexOf(word2,state.index+1)) >= 0 && (op=='<<' || idx==state.index+1)) {
+					for(s of Object.keys(r)) {
+						if(s.indexOf(item) < 0 || s.split('|').indexOf(item) < 0) continue;
+						if(r[s]=='') {
+							//console.log(`${word1} ${item} has no valid ${word2} follows`);
+							return false;	// nothing is allowed!
+						}
+						//console.log(`${word1} ${item} has valid ${word2} follows: ${r[s].split('|').join(', ')}`);
+						break;
+					}
+				}
+				// choosing the following word
+				if(part == word2 && (idx=state.parts?.lastIndexOf(word1,state.index-1)) >= 0 && (op=='<<' || idx==state.index-1)) {
+					let last = state.chosen[idx];
+					for(s of Object.keys(r)) {
+						if(s.indexOf(last) < 0 || s.split('|').indexOf(last) < 0) continue;
+						s = r[s];
+						if(typeof s != 'string') break;	// allowed
+						hit = s[0]=='-'; if(hit) s=s.substring(1);
+						if(s.split('|').indexOf(item) >= 0) hit = !hit;
+						if(!hit) {
+							//console.log(`${word2} ${item} can't follow ${word1} ${last}`);
+							return false;
+						}
+						break;
+					}
+				}
+			}
+			// after>before means immediately after
+			// after>>before means somewhere after
+			else if(op == '>' || op == '>>') {
+				//console.log(`Checking ${part} ${item} for ${state.pattern}: ${word1} ${op} ${word2}=${state.parts?.indexOf(word2,state.index+1)}`);
+				// choosing the following word
+				if(part == word1 && (idx=state.parts?.lastIndexOf(word2,state.index-1)) >= 0 && (op=='>>' || idx==state.index-1)) {
+					let last = state.chosen[idx];
+					for(s of Object.keys(r)) {
+						if(s.indexOf(item) < 0 || s.split('|').indexOf(item) < 0) continue;
+						if(r[s] && r[s]!='' && r[s].split('|').indexOf(last) < 0) {
+							console.log(`${word1} ${item} can't follow ${word2} ${last}`);
+							return false;
+						}
+						break;
+					}
+				}
+			}
+		}
+		return fb(this);
+	};
+}
+
 function Compound(data,params) {
 	if(!new.target) return new Compound(data,params);
 
@@ -385,6 +461,10 @@ function Compound(data,params) {
 	var post = data.post ? (n,p)=>data.post.call(data,n,data,p) : (n)=>n;
 	this.legends = data.legends;
 	var deweightFactor = data.deweightFactor || 0.125;
+
+	var canChoose = data.canChoose ? (i,p,s)=>data.canFollow.call(data,i,p,s) : canChooseDefault.bind(data);
+
+	if(data.followrules) canChoose = buildFollowRules(data.followrules,canChoose);
 
 	// compound generator can benefit from lowering weights of picked components so they're less likely to be picked again (per run)
 	function deweight(build, factor) {
@@ -403,6 +483,7 @@ function Compound(data,params) {
 	// gennname is this generator's name, for debug purposes
 	this.Generate = function(params,genname) {
 		let out,failcount;
+		let state;
 
 		params||={};
 		failcount = params.failcount ?? 10;
@@ -412,14 +493,16 @@ function Compound(data,params) {
 			let pt=pickWeight(patterns), build=[], c, clist, item, capnext=true;
 			out = "";
 			//console.log("pattern",pt);
+			state = {pattern:pt, parts:pt.split(/[,-\s]/), index:0, chosen:build=[], name:out};
 			for(c of pt.split(/([,-\s])/)) {
-				if(c == ',') {capnext=false; continue;}
-				if(c.match(/[-\s]/)) {capnext=true; out += c; continue;}
+				if(c.match(/[,-\s]/)) {state.joiner=c; continue;}
+				if(state.joiner == ',') capnext=false;
+				if(state.joiner?.match(/[-\s]/)) {capnext=true; out += state.joiner;}
 				clist = components[c]||[c];
 				while(clist.length) {
 					let i = pickDynamicWeightIndex(clist);
 					item = clist[i];
-					if(build.indexOf(item) < 0) break;	// don't use the same word twice, but try to find a different one if we can
+					if(build.indexOf(item) < 0 && canChoose(item,c,state)) break;	// don't use the same word twice, but try to find a different one if we can
 					if(clist == components[c]) clist = [].concat(clist);	// make a copy if we're going to be altering it
 					clist.splice(i, (typeof(clist[i+1])=='number' ? 2 : 1));	// also remove weight if present
 				}
@@ -427,12 +510,15 @@ function Compound(data,params) {
 				//console.log(item,clist);
 				build.push(item);
 				out += capnext ? toCaps(item) : item;
+				state.name = out;
+				state.last = item;
+				state.lastpart = c;
+				++state.index;
 			}
 			if(!source[out.toLowerCase()]) {deweight(build,deweightFactor); return post(out,params);}
 		} while(--failcount > 0);
 		return `<span class=fail>${post(out,params)}</span>`;
 	}
-
 }
 
 const NullGen = {Generate: ()=>''};
@@ -631,7 +717,9 @@ var names = {
 					"tracks","wits","share","due","friends","foes","kin"
 				],
 				"prep": [
-					"about",2,"along","around","at",10,"away-from","beneath","between","by","for","from",5,"in",10,"into","near","of",10,"on",3,"onto","over",2,"to",10,"toward","through","under","with",10,"without",4
+					"about",2,"across","along","around","at",10,"away-from","beneath","between","by","for",
+					"from",5,"in",10,"into","near","of",10,"on",3,"onto","over",2,"to",10,"toward",
+					"through","under","with",10,"without",4
 				],
 				"adv": [
 					"much","often","seldom","hardly","never","always","sometimes",
@@ -649,49 +737,50 @@ var names = {
 				],
 				"art": ["a","the","the","the"]
 			},
-			// not used yet, but eventually planned for more intelligent preposition use
-			// this needs to be reorganized
 			"followrules": {
-				// followrules[B][A] = list|of|A -> list|of|allowed|B
-				// if list B is null, counts as 0
-				"prep": {
-					"intrverbs": {
-						"basks": "beneath|in|on|with|without",
-						"bathes|flirts|washes": "in|with|without",
-						"chews|conjures|counts|wins": "with|without",
-						"complains": "about|at|to",
-						"curses|laughs|shouts|smiles|whispers": "about|at",
-						"cleans|dances|runs": null,	// no restrictions
-						"dreams": "of|about",
-						"drinks|eats": "by|in|near|under|with|without",
-						"fights": "for|in|over|with|without",
-						"forgets": "about",
-						"gazes|stares": "at",
-						"hears|thinks": "about|with|without",
-						"hides": "by|from|in|near|with|without",
-						"hops": "around|between|on|over",
-						"hunts|stalks": "around|by|for|in|near|with|without",
-						"kills|slays|stabs": "by|for|in|with|without",
-						"leaps": "on|over|to",
-						"fears|learns|plans|shakes|wanders": "-",
-						"listens": "to|with",
-						"looks|watches": "at|for",
-						"moves": "at|beneath|between|by|in|over|through|under|with|without",
-						"paints|sings|whistles": "at|by|for|in|on|with",
-						"sails": "at|between|by|for|from|to|with|without",
-						"sees": "about|through|with|without",
-						"sleeps": "at|beneath|in|on|under|with|without",
-						"speaks|talks": "about|of|to|with|without",
-						"spits": "at|on",
-						"stands": "beneath|on|over|under|with|without",
-						"steals": "for|from|with",
-						"swims": "around|in|through|with|without",
-						"trades": "with",
-						"trips": "on|over",
-						"waits": "at|beneath|in|under",
-						"walks": "around|beneath|between|by|in|on|over|to|through|under|with|without",
-						"wishes": "for"
-					}
+				"intrverbs<<prep": {
+					"basks": "beneath|in|on|with|without",
+					"bathes|flirts|washes": "in|with|without",
+					"chews|conjures|counts|wins": "with|without",
+					"complains": "about|at|to",
+					"curses|laughs|shouts|smiles|whispers": "about|at",
+					"cleans": "along|around|at|beneath|between|by|for|in|near|under|with|without",
+					"dances|runs": "-of",
+					"deceives|forgets": "about",
+					"dreams": "of|about",
+					"drinks|eats": "by|in|near|under|with|without",
+					"fights": "for|in|over|with|without",
+					"follows": "across|along|around|between|by|in|near|on|over|under|with|without",
+					"gazes|stares": "at",
+					"hears|thinks": "about|with|without",
+					"hides": "by|from|in|near|with|without",
+					"hops": "across|around|between|on|over",
+					"hunts|stalks": "around|by|for|in|near|with|without",
+					"kills|slays|stabs": "by|for|in|with|without",
+					"leads": "-about|at|for|from|in|near|of",
+					"leaps": "across|on|over|to",
+					"fears|heals|learns|plans|shakes": "",	// no prepositions work
+					"listens": "for|to|with",
+					"looks|watches": "at|for",
+					"moves": "across|along|at|beneath|between|by|in|over|through|under|with|without",
+					"paints|sings|whistles": "at|by|for|in|on|with",
+					"sails": "across|at|between|by|for|from|to|with|without",
+					"sees": "about|across|through|with|without",
+					"sleeps": "at|beneath|in|on|under|with|without",
+					"speaks|talks": "about|of|to|with|without",
+					"spits": "at|on",
+					"stands": "beneath|on|over|under|with|without",
+					"steals": "for|from|with",
+					"swims": "across|around|in|through|with|without",
+					"trades": "with",
+					"trips": "on|over",
+					"waits": "at|beneath|in|under",
+					"walks": "across|around|beneath|between|by|in|on|over|to|through|under|with|without",
+					"wanders": "across|along|around|away-from|by|in|into|on|onto|toward",
+					"wishes": "for"
+				},
+				"prep<<noun": {
+					"between": ""	// singular noun can't follow between
 				}
 			},
 			"post": (name,data,params)=>name.split('-').map((part,i,parts)=>{
@@ -718,19 +807,20 @@ var names = {
 		"type": "compound",
 		"data": {
 			// TODO: add source names that are known in-game so the generator avoids repeating them
-			"patterns": ["part,verber","part-part",0.3,"part,part",2,"adjpre,part","adjpre-verber","the adjed",0.5,"the part,verber",0.5,"the verber",0.25],
+			"patterns": ["part,verber","part-part",0.3,"part,part",2,"pre,part","pre-verber","the adjed",0.5,"the part,verber",0.5,"the verber",0.25],
 			"components": {
+				// honorifics need a lot of work; they're not as easy as with other races using them
 				"adjed": [
 					"undying","cunning","shifty","hallowed","crooked","twisted",
-					"dread","gnarled","rotten","hidden","unseen"
+					"dread","gnarled","rotten","hidden","unseen","veiled",
 				].concat(_reachman_adj_shared=[
 					"old","wise","wild","sharp","hale",
 					"fell","mean","cruel","foul","grim",
 					"swift",
 					"black","red"
 				]),
-				"adjpre": [
-					"dread","gnarl","rot"
+				"pre": [
+					"dread","gnarl","rot","sever","break","bury"
 				].concat(_reachman_adj_shared),
 				// instead of a "like", put aspect words and regular nouns in "part" instead; it seems to fit Reachman conventions better
 				"part": [
@@ -738,9 +828,9 @@ var names = {
 					"moon","sky","reach",
 					"night","dark",
 					"winter","summer","frost","storm","wind","fog","mist","ice","snow","chill",
-					"song","clan","spell","curse","hex",
+					"song","clan","spell","curse","hex","vision","omen",
 					"horn","spear","knife","blade","staff",
-					"blood","bone","skull",
+					"bone","skull",
 					"bear","bull","eagle","drake","dragon","crow","elk","raven","ram",
 					"tree","thorn","root","timber","briar","nettle","bloom","vine","branch",
 					"blight",
@@ -752,13 +842,13 @@ var names = {
 				],
 				"verber": [
 					"born","sworn",
-					"breaker","bringer","caller","carver","catcher","chaser","cutter","dancer","dreamer","eater","finder","hunter","maimer","runner","seeker","seer","shaper","singer","skinner","slayer","taker","tamer","twister","walker","weaver"
+					"breaker","bringer","caller","carver","catcher","chaser","cutter","dancer","dreamer","eater","finder","hunter","maimer","render","runner","seeker","seer","shaper","singer","skinner","slayer","taker","tamer","twister","walker","weaver"
 				],
 				"the": ["the"]
 			},
 			"post": (name,data,params) => name.replace(/^\bThe\b/i,'the'),
 			"legends": [
-				{"label": "nord-family", "text": "Known surnames from lore aren't included for comparison"}
+				{"label": "reachman-family", "text": "Known surnames from lore aren't included for comparison"}
 			],
 			"deweightFactor": 0.01	// the smaller sample size benefits from more aggressive deweighting
 		}
@@ -767,7 +857,7 @@ var names = {
 
 var notes = {
 	"altmer": "Altmeri surnames are usually too long for casual use, and seldom appear in lore. The surnames in this generator are therefore built based on a very limited pool, but most Altmer won't use surnames anyway.",
-	"argonian.tamrielic": "The generator for Argonian names has no innate concept of which words actually work together, so a name like Laughs-to-Wind might be produced that's nonsense. These are just idea seeds for you, so if something comes close enough to a workable name, tweak it as you will.",
+	"argonian.tamrielic": "The generator for Argonian names has a limited concept of which words actually work together, so a name might be produced that's nonsense. These are just idea seeds for you, so if something comes close enough to a workable name, tweak it as you will.",
 	"bosmer": "Bosmer don't use surnames.",
 	"dunmer.mainland": "Mainland Dunmer are about 85% of the Dunmer population. The current generator is seeded with the names of great houses, but generally avoids them in its output as it would any other source names.",
 	"dunmer.ashlander": "Ashlanders make up about 15% of the Dunmer in Tamriel.",
