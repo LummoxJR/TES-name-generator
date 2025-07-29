@@ -383,7 +383,8 @@ function canChooseDefault(item,part,state) {
 		let ll=state.last.slice(-1),nl=item.substring(0,1);
 		if(ll == nl) return false;
 		if(ll.match(/[aeiou]/) && nl.match(/[aeiou]/)) return false;
-		if(state.last.slice(-2) == item.substring(0,2)) return false;	// handle cases like th, ch, etc.
+		if(nl == 'h' && ll.match(/[cst]/)) return false;	// confusing compounds
+		if(state.last.slice(-2) == item.substring(0,2)) return false;	// handle cases like double th, ch, etc.
 	}
 	return true;
 }
@@ -828,13 +829,13 @@ var names = {
 					"moon","sky","reach",
 					"night","dark",
 					"winter","summer","frost","storm","wind","fog","mist","ice","snow","chill",
-					"song","clan","spell","curse","hex","vision","omen",
+					"song","clan","spell","curse","hex","vision","omen","rite","bane","ruin",
 					"horn","spear","knife","blade","staff",
 					"bone","skull",
 					"bear","bull","eagle","drake","dragon","crow","elk","raven","ram",
 					"tree","thorn","root","timber","briar","nettle","bloom","vine","branch",
 					"blight",
-					"stone","hill","cave","crag","cliff","chasm","valley","summit","castle",
+					"stone","hill","cave","crag","cliff","chasm","valley","summit","castle","tower",
 					"cinder","ash",
 					"river","pool","ford",
 					"shadow","shade","death","ghost","witch","spirit","grave","wraith",
