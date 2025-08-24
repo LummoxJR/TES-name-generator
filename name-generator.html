@@ -628,7 +628,7 @@ var names = {
 	"altmer.family": {
 		"type": "markov",
 		"data": {
-			"names": "Adaire,Adal,Adbinder,Adian,Adire,Adius,Adlock,Ador,Adorin,Adthar,Adus,Adwatch,Caemaire,Caemal,Caembinder,Caemian,Caemire,Caemius,Caemlock,Caemor,Caemorin,Caemthar,Caemus,Caemwatch,Elsinaire,Elsinal,Elsinbinder,Elsinian,Elsinire,Elsinius,Elsinlock,Elsinor,Elsinorin,Elsinthar,Elsinus,Elsinwatch,Gaeaire,Gaeal,Gaebinder,Gaeian,Gaeire,Gaeius,Gaelock,Gaeor,Gaeorin,Gaethar,Gaeus,Gaewatch,Grayaire,Grayal,Graybinder,Grayian,Grayire,Grayius,Graylock,Grayor,Grayorin,Graythar,Grayus,Graywatch,Highaire,Highal,Highbinder,Highian,Highire,Highius,Highlock,Highor,Highorin,Highthar,Highus,Highwatch,Joraire,Joral,Jorbinder,Jorian,Jorire,Jorius,Jorlock,Joror,Jororin,Jorthar,Jorus,Jorwatch,Larethaire,Larethal,Larethbinder,Larethian,Larethire,Larethius,Larethlock,Larethor,Larethorin,Lareththar,Larethus,Larethwatch,Silinaire,Silinal,Silinbinder,Silinian,Silinire,Silinius,Silinlock,Silinor,Silinorin,Silinthar,Silinus,Silinwatch,Spellaire,Spellal,Spellbinder,Spellian,Spellire,Spellius,Spelllock,Spellor,Spellorin,Spellthar,Spellus,Spellwatch,Stormaire,Stormal,Stormbinder,Stormian,Stormire,Stormius,Stormlock,Stormor,Stormorin,Stormthar,Stormus,Stormwatch,Thromaire,Thromal,Thrombinder,Thromian,Thromire,Thromius,Thromlock,Thromor,Thromorin,Thromthar,Thromus,Thromwatch,Direnni,Aundae,Camoran,Frey,Rilis,Aliaria,AranaAldmeri,Areleth,Ateldil,Blenwyth,Brightsteel,Duure,Favrete,Galerion,Loganne,Lloderion,Ravenwatch,Rumilion,Temolire,Urayel,Wethrin,Aldmeri,Auralus,Corelanya,Culanarin,Egun,Enruneldinion,Errinorne,Firlamil,Hilnore,Inecil,Itelnoril,Nivulirel,Numralion,Piryaden,Salolinwe,Ternerben",
+			"names": "Adaire,Adal,Adbinder,Adian,Adire,Adius,Adlock,Ador,Adorin,Adthar,Adus,Adwatch,Caemaire,Caemal,Caembinder,Caemian,Caemire,Caemius,Caemlock,Caemor,Caemorin,Caemthar,Caemus,Caemwatch,Elsinaire,Elsinal,Elsinbinder,Elsinian,Elsinire,Elsinius,Elsinlock,Elsinor,Elsinorin,Elsinthar,Elsinus,Elsinwatch,Gaeaire,Gaeal,Gaebinder,Gaeian,Gaeire,Gaeius,Gaelock,Gaeor,Gaeorin,Gaethar,Gaeus,Gaewatch,Grayaire,Grayal,Graybinder,Grayian,Grayire,Grayius,Graylock,Grayor,Grayorin,Graythar,Grayus,Graywatch,Highaire,Highal,Highbinder,Highian,Highire,Highius,Highlock,Highor,Highorin,Highthar,Highus,Highwatch,Joraire,Joral,Jorbinder,Jorian,Jorire,Jorius,Jorlock,Joror,Jororin,Jorthar,Jorus,Jorwatch,Larethaire,Larethal,Larethbinder,Larethian,Larethire,Larethius,Larethlock,Larethor,Larethorin,Lareththar,Larethus,Larethwatch,Silinaire,Silinal,Silinbinder,Silinian,Silinire,Silinius,Silinlock,Silinor,Silinorin,Silinthar,Silinus,Silinwatch,Spellaire,Spellal,Spellbinder,Spellian,Spellire,Spellius,Spelllock,Spellor,Spellorin,Spellthar,Spellus,Spellwatch,Stormaire,Stormal,Stormbinder,Stormian,Stormire,Stormius,Stormlock,Stormor,Stormorin,Stormthar,Stormus,Stormwatch,Thromaire,Thromal,Thrombinder,Thromian,Thromire,Thromius,Thromlock,Thromor,Thromorin,Thromthar,Thromus,Thromwatch,Direnni,Aundae,Camoran,Frey,Rilis,Aliaria,Arana,Areleth,Ateldil,Blenwyth,Brightsteel,Duure,Favrete,Galerion,Loganne,Lloderion,Ravenwatch,Rumilion,Temolire,Urayel,Wethrin,Aldmeri,Auralus,Corelanya,Culanarin,Egun,Enruneldinion,Errinorne,Firlamil,Hilnore,Inecil,Itelnoril,Nivulirel,Numralion,Piryaden,Salolinwe,Ternerben",
 			"post": (name) => `<span class="altmer-family">${name}</span>`,
 			"legends": [
 				{"label": "altmer-family", "text": "Surnames are included as possibilities, but most Altmer don't use them in outside society."}
@@ -666,7 +666,7 @@ var names = {
 		"type": "compound",
 		"data": {
 			// TODO: add source names that are known in-game so the generator avoids repeating them
-			"patterns": ["trverbs-nouns","intrverbs-prep-nouns","intrverbs-adv","intrverbs-adv-prep-nouns",0.25,"trverbs-art-noun",0.25,"intrverbs-prep-art-noun",0.25,"trverbs-singular-noun",0.05,"trverbs-multiple-nouns",0.2,"adj-noun","adj-nouns","adj-part","trverbs-his-part","adv-he-intrverbs"],
+			"patterns": ["trverbs-nouns","intrverbs-prep-nouns","intrverbs-adv",0.6,"intrverbs-adv-prep-nouns",0.25,"trverbs-art-noun",0.25,"intrverbs-prep-art-noun",0.25,"trverbs-singular-noun",0.05,"trverbs-multiple-nouns",0.2,"adj-noun","adj-nouns","adj-part","trverbs-his-part","adv-he-intrverbs"],
 			"components": {
 				// can be transitive or intransitive
 				"anyverbs": (_argonian_tamrielic_anyverbs=[
@@ -703,6 +703,7 @@ var names = {
 				]).concat([	// non-pluralizable or collective singular words
 					"sun","dark","darkness","shade","moonlight","twilight","fog","mud","grass","muck","sap","smoke",
 					"nothing","everything","blood","gold","iron",
+					"fun","spite","power",
 					"cloak","hood"
 				]),
 				"nouns": _argonian_tamrielic_noun.map(pluralize).concat([
@@ -723,20 +724,18 @@ var names = {
 					"through","under","with",10,"without",4
 				],
 				"adv": [
-					"much","often","seldom","hardly","never","always","sometimes",
+					"much","often","seldom","hardly","never","always","sometimes","almost","somewhat",
 					"well","poorly","badly","closely","from-Afar",
 					"swiftly","quickly","slowly","lightly","heavily",
-					"silently","loudly","gently","softly","roughly","carefully",
-					"simply","deeply","lazily","foolishly","cautiously","thoughtfully"
+					"silently","loudly","gently","softly","roughly","carefully","awkwardly",
+					"simply","deeply","lazily","foolishly","cautiously","thoughtfully","proudly","timidly"
 				],
 				"singular": ["one"],
 				"multiple": [
-					"no","no","no","no","no","no","no","no","no","no",
-					"few","few","few","few","few","few","few","few","few","few",
-					"many","many","many","many","many","many","many","many","many","many",
+					"no",10,"few",10,"many",10,
 					"two","three","four","five","six","seven","eight","nine","ten"
 				],
-				"art": ["a","the","the","the"]
+				"art": ["a","the"]
 			},
 			"followrules": {
 				"intrverbs<<prep": {
@@ -771,6 +770,7 @@ var names = {
 					"sleeps": "at|beneath|in|on|under|with|without",
 					"speaks|talks": "about|of|to|with|without",
 					"spits": "at|on",
+					"sneaks": "-at|from|to",
 					"stands": "beneath|on|over|under|with|without",
 					"steals": "for|from|with",
 					"swims": "across|around|in|through|with|without",
@@ -783,6 +783,16 @@ var names = {
 				},
 				"prep<<noun": {
 					"between": ""	// singular noun can't follow between
+				},
+				"trverbs<<noun": {
+					"counts": ""	// singular noun can't follow counts
+				},
+				"art<nouns": {
+					"a": ""	// plural noun can't follow a
+				},
+				"noun>art": {
+					"nothing|everything|fun|power|spite": "",
+					"dark|darkness|sun|moonlight|twilight|fog|mud|grass|muck|sap|smoke": "the"
 				}
 			},
 			"post": (name,data,params)=>name.split('-').map((part,i,parts)=>{
